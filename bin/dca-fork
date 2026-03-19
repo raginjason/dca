@@ -1,0 +1,52 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+show_help() {
+  cat >&2 <<EOF
+usage: dca fork <ref-repo> <target>
+
+Fork a repository efficiently using git references. The new fork shares
+git objects with the reference repo, then dissociates.
+
+Examples:
+  dca fork ~/original ~/experiment
+  dca fork /repos/main /workspace/test-branch
+EOF
+}
+
+if [ $# -eq 0 ]; then
+  show_help
+  exit 1
+fi
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  show_help
+  exit 0
+fi
+
+if [ $# -ne 2 ]; then
+  echo "Error: fork requires exactly 2 arguments" >&2
+  show_help
+  exit 1
+fi
+
+ref_repo="$1"
+target="$2"
+
+if [ ! -d "$ref_repo/.git" ]; then
+  echo "Error: reference repo '$ref_repo' not found (or not a git repo)" >&2
+  exit 1
+fi
+
+if [ -e "$target" ]; then
+  echo "Error: target '$target' already exists" >&2
+  exit 1
+fi
+
+remote="$(git -C "$ref_repo" config --local --get remote.origin.url)"
+branch="$(git -C "$ref_repo" symbolic-ref --short HEAD)"
+
+set -o xtrace
+git clone --reference "$ref_repo" --dissociate --branch "$branch" "$remote" "$target"

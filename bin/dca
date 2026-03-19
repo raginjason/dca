@@ -1,0 +1,49 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+if [ $# -eq 0 ]; then
+  cat >&2 <<EOF
+usage: dca <command> [<args>]
+
+fork and setup
+   fork           Fork repo efficiently using git references
+
+launch and develop
+   code           Open directory in VS Code devcontainer
+
+Run 'dca <command> -h' for command-specific help.
+EOF
+  exit 1
+fi
+
+cmd="$1"
+shift
+
+case "$cmd" in
+  fork)
+    exec "$(dirname "$0")/dca-fork" "$@"
+    ;;
+  code)
+    exec "$(dirname "$0")/dca-code" "$@"
+    ;;
+  -h|--help|help)
+    cat >&2 <<EOF
+usage: dca <command> [<args>]
+
+fork and setup
+   fork           Fork repo efficiently using git references
+
+launch and develop
+   code           Open directory in VS Code devcontainer
+
+Run 'dca <command> -h' for command-specific help.
+EOF
+    exit 0
+    ;;
+  *)
+    echo "dca: '$cmd' is not a dca command. See 'dca --help'." >&2
+    exit 1
+    ;;
+esac

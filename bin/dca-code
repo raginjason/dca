@@ -1,0 +1,69 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+show_help() {
+  cat >&2 <<EOF
+usage: dca code <directory>
+
+Open a directory in VS Code with devcontainer support.
+
+Examples:
+  dca code .
+  dca code ~/experiments/myrepo-feature
+EOF
+}
+
+if [ $# -eq 0 ]; then
+  show_help
+  exit 1
+fi
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  show_help
+  exit 0
+fi
+
+if [ $# -ne 1 ]; then
+  echo "Error: code requires exactly 1 argument" >&2
+  show_help
+  exit 1
+fi
+
+dir=$(cd "$1" && pwd)
+
+if [ ! -d "$dir" ]; then
+  echo "Error: '$1' is not a directory" >&2
+  exit 1
+fi
+
+# Check for devcontainer configuration in standard locations
+# VS Code Dev Containers looks for:
+# 1. .devcontainer/devcontainer.json (recommended)
+# 2. .devcontainer.json (alternative)
+# 3. .devcontainer/ directory (with devcontainer.json inside)
+devcontainer_found=0
+if [ -f "$dir/.devcontainer/devcontainer.json" ]; then
+  devcontainer_found=1
+elif [ -f "$dir/.devcontainer.json" ]; then
+  devcontainer_found=1
+elif [ -d "$dir/.devcontainer" ]; then
+  # .devcontainer directory exists, which is good (devcontainer.json may be auto-generated)
+  devcontainer_found=1
+fi
+
+if [ $devcontainer_found -eq 0 ]; then
+  echo "Error: no devcontainer configuration found in '$dir'" >&2
+  echo "       Expected one of:" >&2
+  echo "       - $dir/.devcontainer/devcontainer.json" >&2
+  echo "       - $dir/.devcontainer.json" >&2
+  echo "       - $dir/.devcontainer/ directory" >&2
+  exit 1
+fi
+
+hex=$(printf '%s' "$dir" | xxd -p -c 256)
+folder=$(basename "$dir")
+
+set -o xtrace
+code --folder-uri "vscode-remote://dev-container+${hex}/workspaces/${folder}"
