@@ -3,10 +3,15 @@
 # Installation script for dca
 # 
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/raginjason/dca/main/bin/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/raginjason/dca/main/install.sh | sh
 # 
 # Or with custom install directory:
-#   curl -fsSL https://raw.githubusercontent.com/raginjason/dca/main/bin/install.sh | DCA_INSTALL_DIR=~/bin sh
+#   curl -fsSL https://raw.githubusercontent.com/raginjason/dca/main/install.sh | DCA_INSTALL_DIR=~/bin sh
+#
+# Environment variable overrides (for testing):
+#   DCA_INSTALL_DIR  - Override the installation directory (default: ~/.local/bin)
+#   DCA_VERSION      - Override the version to install, skips GitHub API lookup
+#   DCA_TARBALL_URL  - Override the tarball URL (e.g. file:///path/to/fake.tar.gz)
 #
 
 set -o errexit
@@ -18,9 +23,13 @@ DCA_INSTALL_DIR="${DCA_INSTALL_DIR:-${HOME}/.local/bin}"
 # Create install directory if it doesn't exist
 mkdir -p "$DCA_INSTALL_DIR"
 
-# Determine which release to download
+# Determine which release to install
 REPO="raginjason/dca"
-RELEASE=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" | grep -o '"tag_name": "[^"]*"' | head -1 | cut -d'"' -f4)
+if [ -n "${DCA_VERSION:-}" ]; then
+  RELEASE="$DCA_VERSION"
+else
+  RELEASE=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" | grep -o '"tag_name": "[^"]*"' | head -1 | cut -d'"' -f4)
+fi
 
 if [ -z "$RELEASE" ]; then
   echo "Error: Could not determine latest release" >&2
@@ -29,8 +38,12 @@ fi
 
 echo "Installing dca ${RELEASE} to ${DCA_INSTALL_DIR}"
 
-# Download release tarball
-TARBALL_URL="https://github.com/${REPO}/releases/download/${RELEASE}/dca-${RELEASE}.tar.gz"
+# Build or use override tarball URL
+if [ -n "${DCA_TARBALL_URL:-}" ]; then
+  TARBALL_URL="$DCA_TARBALL_URL"
+else
+  TARBALL_URL="https://github.com/${REPO}/releases/download/${RELEASE}/dca-${RELEASE}.tar.gz"
+fi
 TEMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TEMP_DIR"' EXIT
 
