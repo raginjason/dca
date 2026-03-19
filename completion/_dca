@@ -1,0 +1,61 @@
+#!/usr/bin/env zsh
+# shellcheck shell=bash disable=SC2034,SC1087,SC2128,SC2296,SC2153
+#
+# zsh completion function for dca command
+# 
+# REQUIRES: zsh completion framework initialized in ~/.zshrc:
+#   autoload -Uz compinit && compinit
+#
+# Installation methods:
+#   1. User-level (~/.zsh/completions/):
+#      mkdir -p ~/.zsh/completions
+#      cp /path/to/dca/completion/_dca ~/.zsh/completions/
+#      Add to ~/.zshrc: fpath=(~/.zsh/completions $fpath)
+#
+#   2. System-wide (/usr/local/share/zsh/site-functions/):
+#      sudo cp /path/to/dca/completion/_dca /usr/local/share/zsh/site-functions/
+#
+#   3. Source directly in ~/.zshrc (after compinit):
+#      source /path/to/dca/completion/_dca
+#
+
+emulate -L zsh
+
+_dca() {
+  local -a words=("${(@)words}")
+  local current="$words[CURRENT]"
+  local -a subcommands=('fork' 'code')
+  local -a options=('-h' '--help')
+
+  # Suggest subcommands or options at position 2
+  if (( CURRENT == 2 )); then
+    if [[ "$current" == -* ]]; then
+      _describe -t options "option" options
+    else
+      _describe -t subcommands "subcommand" subcommands
+    fi
+    return
+  fi
+
+  # Handle subcommand completions
+  local subcmd="$words[2]"
+  
+  case "$subcmd" in
+    fork)
+      if [[ "$current" == -* ]]; then
+        _describe -t options "option" options
+      else
+        _directories
+      fi
+      ;;
+    code)
+      if [[ "$current" == -* ]]; then
+        _describe -t options "option" options
+      else
+        _directories
+      fi
+      ;;
+  esac
+}
+
+compdef _dca dca
