@@ -34,6 +34,7 @@ fork and setup
 
 launch and develop
    code           Open directory in VS Code devcontainer
+   devcontainer   Start a devcontainer with VS Code defaultFeatures injected
 ```
 
 ### `dca fork <ref-repo> <target>`
@@ -54,11 +55,26 @@ dca code ~/experiments/myrepo-feature
 dca code .
 ```
 
+### `dca devcontainer <directory> [<args>...]`
+
+Run `devcontainer up` for the given directory. If your VS Code user settings contain `dev.containers.defaultFeatures`, those features are automatically injected via `--additional-features`. Any additional arguments are forwarded directly to `devcontainer up`.
+
+```sh
+dca devcontainer ~/experiments/myrepo-feature
+# or from inside the directory:
+dca devcontainer .
+# pass extra flags through to devcontainer up:
+dca devcontainer . --remove-existing-container
+```
+
 ## Requirements
 
 - Git
 - VS Code with [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
 - A project with `devcontainer.json` configured
+- `dca devcontainer` additionally requires:
+  - [`devcontainer` CLI](https://github.com/devcontainers/cli): `npm install -g @devcontainers/cli`
+  - [`jq`](https://jqlang.github.io/jq/)
 
 ## Workflow Example
 

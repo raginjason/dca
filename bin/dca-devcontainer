@@ -1,0 +1,87 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+show_help() {
+    cat >&2 <<EOF
+usage: dca devcontainer <directory> [<devcontainer-args>...]
+
+Start a devcontainer for the given directory, automatically injecting any
+features defined under dev.containers.defaultFeatures in your VS Code user
+settings via --additional-features.
+
+Examples:
+  dca devcontainer .
+  dca devcontainer ~/experiments/myrepo-feature
+  dca devcontainer . --remove-existing-container
+EOF
+}
+
+if [ $# -eq 0 ]; then
+    show_help
+    exit 1
+fi
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    show_help
+    exit 0
+fi
+
+# Validate required dependencies
+if ! command -v jq >/dev/null 2>&1; then
+    echo "Error: jq is required but not found on PATH" >&2
+    exit 1
+fi
+
+if ! command -v devcontainer >/dev/null 2>&1; then
+    echo "Error: devcontainer CLI is required but not found on PATH" >&2
+    echo "       Install it with: npm install -g @devcontainers/cli" >&2
+    exit 1
+fi
+
+dir=$(cd "$1" && pwd)
+shift
+
+if [ ! -d "$dir" ]; then
+    echo "Error: '$dir' is not a directory" >&2
+    exit 1
+fi
+
+# Locate VS Code user settings.json (OS-aware, with Code Insiders fallback)
+settings_file=""
+os="$(uname -s)"
+case "$os" in
+    Linux)
+        config_base="${XDG_CONFIG_HOME:-$HOME/.config}"
+        if [ -f "$config_base/Code/User/settings.json" ]; then
+            settings_file="$config_base/Code/User/settings.json"
+        elif [ -f "$config_base/Code - Insiders/User/settings.json" ]; then
+            settings_file="$config_base/Code - Insiders/User/settings.json"
+        fi
+        ;;
+    Darwin)
+        if [ -f "$HOME/Library/Application Support/Code/User/settings.json" ]; then
+            settings_file="$HOME/Library/Application Support/Code/User/settings.json"
+        elif [ -f "$HOME/Library/Application Support/Code - Insiders/User/settings.json" ]; then
+            settings_file="$HOME/Library/Application Support/Code - Insiders/User/settings.json"
+        fi
+        ;;
+    *)
+        echo "Warning: unsupported OS '$os', skipping dev.containers.defaultFeatures" >&2
+        ;;
+esac
+
+# Extract dev.containers.defaultFeatures; empty string if absent or file not found
+additional_features=""
+if [ -n "$settings_file" ]; then
+    additional_features="$(jq -c '.["dev.containers.defaultFeatures"] // empty' "$settings_file")"
+fi
+
+if [ -n "$additional_features" ]; then
+    set -o xtrace
+    exec devcontainer up --workspace-folder "$dir" --additional-features "$additional_features" "$@"
+fi
+
+set -o xtrace
+exec devcontainer up --workspace-folder "$dir" "$@"

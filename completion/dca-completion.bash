@@ -28,7 +28,7 @@ _dca() {
     if [[ "$cur" == -* ]]; then
       COMPREPLY=($(compgen -W "-h --help help" -- "$cur"))
     else
-      COMPREPLY=($(compgen -W "fork code" -- "$cur"))
+      COMPREPLY=($(compgen -W "fork code devcontainer" -- "$cur"))
     fi
     return 0
   fi
@@ -53,6 +53,15 @@ _dca() {
         COMPREPLY=($(compgen -W "-h --help" -- "$cur"))
       else
         # One argument: directory path
+        _filedir -d
+      fi
+      ;;
+    devcontainer)
+      # 'dca devcontainer' subcommand
+      if [[ "$cur" == -* ]]; then
+        COMPREPLY=($(compgen -W "-h --help" -- "$cur"))
+      else
+        # First positional argument: directory path
         _filedir -d
       fi
       ;;

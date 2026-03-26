@@ -54,9 +54,10 @@ curl -fsSL "$TARBALL_URL" | tar -xz -C "$TEMP_DIR"
 cp "$TEMP_DIR/dca-${RELEASE}/bin/dca" "$DCA_INSTALL_DIR/"
 cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-fork" "$DCA_INSTALL_DIR/"
 cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-code" "$DCA_INSTALL_DIR/"
+cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-devcontainer" "$DCA_INSTALL_DIR/"
 
 # Make executable
-chmod +x "$DCA_INSTALL_DIR/dca" "$DCA_INSTALL_DIR/dca-fork" "$DCA_INSTALL_DIR/dca-code"
+chmod +x "$DCA_INSTALL_DIR/dca" "$DCA_INSTALL_DIR/dca-fork" "$DCA_INSTALL_DIR/dca-code" "$DCA_INSTALL_DIR/dca-devcontainer"
 
 echo "✓ Installation complete!"
 echo ""
