@@ -3,9 +3,12 @@
   "image": "mcr.microsoft.com/devcontainers/base:debian",
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers-extra/features/shellcheck:1": {},
     "ghcr.io/devcontainers-extra/features/shfmt:1": {}
   },
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y shellcheck",
+  "containerEnv":{
+    "NODE_OPTIONS": "--dns-result-order=ipv4first"
+  },
   "customizations": {
     "vscode": {
       "extensions": [
@@ -17,5 +20,8 @@
         "shellformat.flag": "-i 4 -ci"
       }
     }
-  }
+  },
+  "mounts": [
+    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume"
+  ]
 }
