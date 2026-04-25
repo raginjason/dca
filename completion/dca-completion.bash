@@ -28,7 +28,7 @@ _dca() {
     if [[ "$cur" == -* ]]; then
       COMPREPLY=($(compgen -W "-h --help help" -- "$cur"))
     else
-      COMPREPLY=($(compgen -W "fork code devcontainer" -- "$cur"))
+      COMPREPLY=($(compgen -W "fork code devcontainer config" -- "$cur"))
     fi
     return 0
   fi
@@ -63,6 +63,19 @@ _dca() {
       else
         # First positional argument: directory path
         _filedir -d
+      fi
+      ;;
+    config)
+      # 'dca config' subcommand
+      if [[ $cword -eq 2 ]]; then
+        if [[ "$cur" == -* ]]; then
+          COMPREPLY=($(compgen -W "-h --help" -- "$cur"))
+        else
+          COMPREPLY=($(compgen -W "import import-vscode import-cursor show clear" -- "$cur"))
+        fi
+      elif [[ $cword -eq 3 && "${words[2]}" == "import" ]]; then
+        # 'dca config import' takes a file argument
+        _filedir
       fi
       ;;
   esac

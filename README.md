@@ -1,10 +1,8 @@
-# dca — Dev Container Agent/Anarchy/Asylum
+# dca — Dev Container A\*
 
 Fast setup for experimental work in isolated devcontainers.
 
-> The `dc` stands for devcontainer. The `a` stands for AI, anarchy, or asylum — depending on your mood.
-
-**For installation and shell completion setup, see [INSTALLATION.md](INSTALLATION.md).**
+> The `dc` stands for devcontainer. The `a` stands for AI, anarchy, or asylum — depending on the mood.
 
 ## Why
 
@@ -14,10 +12,10 @@ Quickly fork a repo and launch VS Code in a disposable devcontainer. No impact o
 
 ```sh
 # Fork a repo efficiently (shares git objects, minimal disk usage)
-dca fork ~/my-proj ~/my-proj-feature
+dca fork ~/original ~/experiment
 
 # Launch in VS Code devcontainer
-dca code ~/my-proj-feature
+dca code .
 
 # Use git normally inside container
 git branch -b feature-x
@@ -34,7 +32,10 @@ fork and setup
 
 launch and develop
    code           Open directory in VS Code devcontainer
-   devcontainer   Start a devcontainer with VS Code defaultFeatures injected
+   devcontainer   Start a devcontainer with stored defaultFeatures injected
+
+configure
+   config         Manage stored devcontainer default features
 ```
 
 ### `dca fork <ref-repo> <target>`
@@ -55,16 +56,33 @@ dca code ~/experiments/myrepo-feature
 dca code .
 ```
 
-### `dca devcontainer <directory> [<args>...]`
+### `dca config <command>`
 
-Run `devcontainer up` for the given directory. If your VS Code user settings contain `dev.containers.defaultFeatures`, those features are automatically injected via `--additional-features`. Any additional arguments are forwarded directly to `devcontainer up`.
+Manage the stored devcontainer default features that `dca devcontainer` injects via `--additional-features`. Features are read from any VS Code-compatible `settings.json` and stored in `~/.config/dca/config.json`.
+
+| Command | Description |
+|---------|-------------|
+| `import <file>` | Read `dev.containers.defaultFeatures` from `<file>` and store it |
+| `import-vscode` | Import from VS Code user `settings.json` |
+| `import-cursor` | Import from Cursor user `settings.json` |
+| `show` | Print stored features as JSON |
+| `clear` | Remove stored features |
 
 ```sh
-dca devcontainer ~/experiments/myrepo-feature
-# or from inside the directory:
-dca devcontainer .
-# pass extra flags through to devcontainer up:
-dca devcontainer . --remove-existing-container
+# Import from VS Code settings
+dca config import-vscode
+
+# Import from Cursor settings
+dca config import-cursor
+
+# Import from any settings.json
+dca config import ~/my-settings.json
+
+# View what's stored
+dca config show
+
+# Remove stored features
+dca config clear
 ```
 
 ## Requirements
@@ -72,9 +90,6 @@ dca devcontainer . --remove-existing-container
 - Git
 - VS Code with [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
 - A project with `devcontainer.json` configured
-- `dca devcontainer` additionally requires:
-  - [`devcontainer` CLI](https://github.com/devcontainers/cli): `npm install -g @devcontainers/cli`
-  - [`jq`](https://jqlang.github.io/jq/)
 
 ## Workflow Example
 
@@ -85,9 +100,10 @@ git clone https://github.com/user/myproject.git original
 
 # Fork it for an experiment
 dca fork original experiments/feature-x
+cd experiments/feature-x
 
 # Launch in devcontainer
-dca code experiments/feature-x
+dca code .
 
 # Inside VS Code (running in container):
 git branch -b feature-x
@@ -98,6 +114,41 @@ git branch -b feature-x
 # When done, just delete the fork
 cd ~
 rm -rf experiments/feature-x
+```
+
+## Installation
+
+### One-liner (macOS/Linux)
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/raginjason/dca/main/install.sh | sh
+```
+
+The install script will:
+1. Fetch the latest release from GitHub
+2. Install scripts to `~/.local/bin` (no sudo) or `/usr/local/bin`
+3. Warn if the install directory is not in your `$PATH`
+
+Override the install directory:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/raginjason/dca/main/install.sh | DCA_INSTALL_DIR=~/bin sh
+```
+
+### Manual
+
+Download the latest release tarball from [Releases](https://github.com/raginjason/dca/releases), extract, and add to your `$PATH`:
+
+```sh
+tar -xzf dca-<version>.tar.gz -C ~/.local/bin
+chmod +x ~/.local/bin/dca ~/.local/bin/dca-fork ~/.local/bin/dca-code
+```
+
+### From source
+
+```sh
+git clone https://github.com/raginjason/dca.git
+export PATH="/path/to/dca:$PATH"
 ```
 
 ## License

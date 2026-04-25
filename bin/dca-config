@@ -1,0 +1,144 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+DCA_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/dca"
+DCA_CONFIG_FILE="$DCA_CONFIG_DIR/config.json"
+
+show_help() {
+    cat >&2 <<EOF
+usage: dca config <command> [<args>]
+
+Manage stored devcontainer default features.
+
+commands:
+   import <file>      Read dev.containers.defaultFeatures from <file> and store it
+   import-vscode      Import from VS Code user settings.json
+   import-cursor      Import from Cursor user settings.json
+   show               Print stored features as JSON
+   clear              Remove stored features
+
+Examples:
+  dca config import ~/settings.json
+  dca config import-vscode
+  dca config import-cursor
+  dca config show
+  dca config clear
+EOF
+}
+
+cmd_import() {
+    if [ $# -ne 1 ]; then
+        show_help
+        exit 1
+    fi
+
+    settings_file="$1"
+
+    if [ ! -f "$settings_file" ]; then
+        echo "Error: '$settings_file' not found" >&2
+        exit 1
+    fi
+
+    if ! command -v jq >/dev/null 2>&1; then
+        echo "Error: jq is required but not found on PATH" >&2
+        exit 1
+    fi
+
+    features="$(jq -c '.["dev.containers.defaultFeatures"] // empty' "$settings_file")"
+
+    if [ -z "$features" ]; then
+        echo "Error: 'dev.containers.defaultFeatures' not found in '$settings_file'" >&2
+        exit 1
+    fi
+
+    mkdir -p "$DCA_CONFIG_DIR"
+    jq '.["dev.containers.defaultFeatures"]' "$settings_file" > "$DCA_CONFIG_FILE"
+
+    count="$(jq 'keys | length' "$DCA_CONFIG_FILE")"
+    echo "Imported $count feature(s) from $settings_file → $DCA_CONFIG_FILE"
+}
+
+cmd_import_vscode() {
+    os="$(uname -s)"
+    case "$os" in
+        Linux)
+            settings="${XDG_CONFIG_HOME:-$HOME/.config}/Code/User/settings.json"
+            ;;
+        Darwin)
+            settings="$HOME/Library/Application Support/Code/User/settings.json"
+            ;;
+        *)
+            echo "Error: unsupported OS '$os'" >&2
+            exit 1
+            ;;
+    esac
+    cmd_import "$settings"
+}
+
+cmd_import_cursor() {
+    os="$(uname -s)"
+    case "$os" in
+        Linux)
+            settings="${XDG_CONFIG_HOME:-$HOME/.config}/Cursor/User/settings.json"
+            ;;
+        Darwin)
+            settings="$HOME/Library/Application Support/Cursor/User/settings.json"
+            ;;
+        *)
+            echo "Error: unsupported OS '$os'" >&2
+            exit 1
+            ;;
+    esac
+    cmd_import "$settings"
+}
+
+cmd_show() {
+    if [ ! -f "$DCA_CONFIG_FILE" ]; then
+        echo "No features stored." >&2
+        exit 1
+    fi
+    jq '.' "$DCA_CONFIG_FILE"
+}
+
+cmd_clear() {
+    if [ ! -f "$DCA_CONFIG_FILE" ]; then
+        echo "Nothing to clear."
+        exit 0
+    fi
+    rm "$DCA_CONFIG_FILE"
+    echo "Cleared."
+}
+
+case "${1:-}" in
+    import)
+        shift
+        cmd_import "$@"
+        ;;
+    import-vscode)
+        cmd_import_vscode
+        ;;
+    import-cursor)
+        cmd_import_cursor
+        ;;
+    show)
+        cmd_show
+        ;;
+    clear)
+        cmd_clear
+        ;;
+    -h|--help)
+        show_help
+        exit 0
+        ;;
+    "")
+        show_help
+        exit 1
+        ;;
+    *)
+        echo "dca config: unknown command '$1'" >&2
+        show_help
+        exit 1
+        ;;
+esac

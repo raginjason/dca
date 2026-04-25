@@ -55,9 +55,10 @@ cp "$TEMP_DIR/dca-${RELEASE}/bin/dca" "$DCA_INSTALL_DIR/"
 cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-fork" "$DCA_INSTALL_DIR/"
 cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-code" "$DCA_INSTALL_DIR/"
 cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-devcontainer" "$DCA_INSTALL_DIR/"
+cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-config" "$DCA_INSTALL_DIR/"
 
 # Make executable
-chmod +x "$DCA_INSTALL_DIR/dca" "$DCA_INSTALL_DIR/dca-fork" "$DCA_INSTALL_DIR/dca-code" "$DCA_INSTALL_DIR/dca-devcontainer"
+chmod +x "$DCA_INSTALL_DIR/dca" "$DCA_INSTALL_DIR/dca-fork" "$DCA_INSTALL_DIR/dca-code" "$DCA_INSTALL_DIR/dca-devcontainer" "$DCA_INSTALL_DIR/dca-config"
 
 echo "✓ Installation complete!"
 echo ""

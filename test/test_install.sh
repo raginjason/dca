@@ -64,10 +64,12 @@ make_fake_tarball() {
   printf '#!/bin/sh\necho "fake dca-fork"\n'         > "$staging_dir/dca-${version}/bin/dca-fork"
   printf '#!/bin/sh\necho "fake dca-code"\n'         > "$staging_dir/dca-${version}/bin/dca-code"
   printf '#!/bin/sh\necho "fake dca-devcontainer"\n' > "$staging_dir/dca-${version}/bin/dca-devcontainer"
+  printf '#!/bin/sh\necho "fake dca-config"\n'       > "$staging_dir/dca-${version}/bin/dca-config"
   chmod +x "$staging_dir/dca-${version}/bin/dca" \
            "$staging_dir/dca-${version}/bin/dca-fork" \
            "$staging_dir/dca-${version}/bin/dca-code" \
-           "$staging_dir/dca-${version}/bin/dca-devcontainer"
+           "$staging_dir/dca-${version}/bin/dca-devcontainer" \
+           "$staging_dir/dca-${version}/bin/dca-config"
   tar -czf "$tarball_path" -C "$staging_dir" "dca-${version}"
   rm -rf "$staging_dir"
 }
@@ -88,10 +90,12 @@ test_happy_path_default_install_dir() {
   assert_file_exists "$INSTALL_DIR/dca-fork"            "dca-fork is installed"
   assert_file_exists "$INSTALL_DIR/dca-code"            "dca-code is installed"
   assert_file_exists "$INSTALL_DIR/dca-devcontainer"    "dca-devcontainer is installed"
+  assert_file_exists "$INSTALL_DIR/dca-config"          "dca-config is installed"
   assert_executable  "$INSTALL_DIR/dca"                 "dca is executable"
   assert_executable  "$INSTALL_DIR/dca-fork"            "dca-fork is executable"
   assert_executable  "$INSTALL_DIR/dca-code"            "dca-code is executable"
   assert_executable  "$INSTALL_DIR/dca-devcontainer"    "dca-devcontainer is executable"
+  assert_executable  "$INSTALL_DIR/dca-config"          "dca-config is executable"
 
   rm -rf "$TEST_DIR"
 }

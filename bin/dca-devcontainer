@@ -8,8 +8,7 @@ show_help() {
 usage: dca devcontainer <directory> [<devcontainer-args>...]
 
 Start a devcontainer for the given directory, automatically injecting any
-features defined under dev.containers.defaultFeatures in your VS Code user
-settings via --additional-features.
+features stored via 'dca config' via --additional-features.
 
 Examples:
   dca devcontainer .
@@ -48,34 +47,12 @@ if [ ! -d "$dir" ]; then
     exit 1
 fi
 
-# Locate VS Code user settings.json (OS-aware, with Code Insiders fallback)
-settings_file=""
-os="$(uname -s)"
-case "$os" in
-    Linux)
-        config_base="${XDG_CONFIG_HOME:-$HOME/.config}"
-        if [ -f "$config_base/Code/User/settings.json" ]; then
-            settings_file="$config_base/Code/User/settings.json"
-        elif [ -f "$config_base/Code - Insiders/User/settings.json" ]; then
-            settings_file="$config_base/Code - Insiders/User/settings.json"
-        fi
-        ;;
-    Darwin)
-        if [ -f "$HOME/Library/Application Support/Code/User/settings.json" ]; then
-            settings_file="$HOME/Library/Application Support/Code/User/settings.json"
-        elif [ -f "$HOME/Library/Application Support/Code - Insiders/User/settings.json" ]; then
-            settings_file="$HOME/Library/Application Support/Code - Insiders/User/settings.json"
-        fi
-        ;;
-    *)
-        echo "Warning: unsupported OS '$os', skipping dev.containers.defaultFeatures" >&2
-        ;;
-esac
+# Read stored default features from dca config
+DCA_CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dca/config.json"
 
-# Extract dev.containers.defaultFeatures; empty string if absent or file not found
 additional_features=""
-if [ -n "$settings_file" ]; then
-    additional_features="$(jq -c '.["dev.containers.defaultFeatures"] // empty' "$settings_file")"
+if [ -f "$DCA_CONFIG_FILE" ]; then
+    additional_features="$(jq -c '. // empty' "$DCA_CONFIG_FILE")"
 fi
 
 if [ -n "$additional_features" ]; then

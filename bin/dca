@@ -12,7 +12,10 @@ fork and setup
 
 launch and develop
    code           Open directory in VS Code devcontainer
-   devcontainer   Start a devcontainer with VS Code defaultFeatures injected
+   devcontainer   Start a devcontainer with stored defaultFeatures injected
+
+configure
+   config         Manage stored devcontainer default features
 
 Run 'dca <command> -h' for command-specific help.
 EOF
@@ -32,6 +35,9 @@ case "$cmd" in
   devcontainer)
     exec "$(dirname "$0")/dca-devcontainer" "$@"
     ;;
+  config)
+    exec "$(dirname "$0")/dca-config" "$@"
+    ;;
   -h|--help|help)
     cat >&2 <<EOF
 usage: dca <command> [<args>]
@@ -41,7 +47,10 @@ fork and setup
 
 launch and develop
    code           Open directory in VS Code devcontainer
-   devcontainer   Start a devcontainer with VS Code defaultFeatures injected
+   devcontainer   Start a devcontainer with stored defaultFeatures injected
+
+configure
+   config         Manage stored devcontainer default features
 
 Run 'dca <command> -h' for command-specific help.
 EOF

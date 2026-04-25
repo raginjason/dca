@@ -1,0 +1,20 @@
+{
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "terminal.integrated.enableMultiLinePasteWarning": false,
+    "workbench.startupEditor": "none",
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        }
+    },
+    "dev.containers.copyGitConfig": false,
+    "dev.containers.defaultFeatures": {
+        "ghcr.io/raginjason/features/yadm": {
+            "repositoryUrl": "https://github.com/raginjason/dotfiles.git",
+            "localClass": "",
+            "overwriteExisting": true,
+            "decryptOnClone": true
+        }
+    }
+}
