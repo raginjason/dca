@@ -33,6 +33,7 @@ fork and setup
 launch and develop
    code           Open directory in VS Code devcontainer
    devcontainer   Start a devcontainer with stored defaultFeatures injected
+   session        Start a devcontainer with tmux and attach to a session
 
 configure
    config         Manage stored devcontainer default features
@@ -55,6 +56,27 @@ dca code ~/experiments/myrepo-feature
 # or from inside the directory:
 dca code .
 ```
+
+### `dca session <directory>`
+
+Start a devcontainer with [tmux](https://github.com/tmux/tmux) always installed, then attach to a persistent tmux session inside it. Stored features from `dca config` are injected alongside tmux. The tmux feature (`ghcr.io/devcontainers-extra/features/tmux-apt-get:1`) is always added and is never stored in config.
+
+```sh
+dca session .
+dca session ~/experiments/myrepo-feature
+# rebuild the container first, then attach
+dca session . --remove-existing-container
+```
+
+After `devcontainer up` completes, this runs:
+
+```sh
+devcontainer exec --workspace-folder <dir> tmux new-session -A -s main
+```
+
+The `-A` flag attaches to an existing `main` session if one exists, creating it otherwise — so re-running `dca session` in the same container just reconnects.
+
+> **Tip:** Add `ghcr.io/devcontainers-extra/features/tmux-apt-get:1` to `dev.containers.defaultFeatures` in your VS Code or Cursor settings, then run `dca config import-vscode` (or `import-cursor`). This ensures tmux is present in every devcontainer you create — including ones opened directly by VS Code — so `dca session` always works on the first try without needing `--remove-existing-container`.
 
 ### `dca config <command>`
 

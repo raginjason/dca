@@ -1,0 +1,71 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+show_help() {
+    cat >&2 <<EOF
+usage: dca session <directory> [<devcontainer-args>...]
+
+Start a devcontainer for the given directory with tmux always installed, then
+attach to a persistent tmux session inside it. Stored features from 'dca config'
+are also injected alongside tmux.
+
+Examples:
+  dca session .
+  dca session ~/experiments/myrepo-feature
+  dca session . --remove-existing-container
+EOF
+}
+
+if [ $# -eq 0 ]; then
+    show_help
+    exit 1
+fi
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    show_help
+    exit 0
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+    echo "Error: jq is required but not found on PATH" >&2
+    exit 1
+fi
+
+if ! command -v devcontainer >/dev/null 2>&1; then
+    echo "Error: devcontainer CLI is required but not found on PATH" >&2
+    echo "       Install it with: npm install -g @devcontainers/cli" >&2
+    exit 1
+fi
+
+dir=$(cd "$1" && pwd)
+shift
+
+if [ ! -d "$dir" ]; then
+    echo "Error: '$dir' is not a directory" >&2
+    exit 1
+fi
+
+TMUX_FEATURE='{"ghcr.io/devcontainers-extra/features/tmux-apt-get:1": {}}'
+DCA_CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dca/config.json"
+
+if [ -f "$DCA_CONFIG_FILE" ]; then
+    additional_features="$(jq -c ". + $TMUX_FEATURE" "$DCA_CONFIG_FILE")"
+else
+    additional_features="$TMUX_FEATURE"
+fi
+
+set -o xtrace
+devcontainer up --workspace-folder "$dir" --additional-features "$additional_features" "$@"
+{ set +x; } 2>/dev/null
+
+if ! devcontainer exec --workspace-folder "$dir" sh -c 'command -v tmux >/dev/null 2>&1'; then
+    echo "Error: tmux not found in the container." >&2
+    echo "       The container was likely built before this session was added." >&2
+    echo "       Rebuild it with: dca session $(printf '%s' "$dir") --remove-existing-container" >&2
+    exit 1
+fi
+
+set -o xtrace
+exec devcontainer exec --workspace-folder "$dir" tmux new-session -A -s main

@@ -13,6 +13,7 @@ fork and setup
 launch and develop
    code           Open directory in VS Code devcontainer
    devcontainer   Start a devcontainer with stored defaultFeatures injected
+   session        Start a devcontainer with tmux and attach to a session
 
 configure
    config         Manage stored devcontainer default features
@@ -35,6 +36,9 @@ case "$cmd" in
   devcontainer)
     exec "$(dirname "$0")/dca-devcontainer" "$@"
     ;;
+  session)
+    exec "$(dirname "$0")/dca-session" "$@"
+    ;;
   config)
     exec "$(dirname "$0")/dca-config" "$@"
     ;;
@@ -48,6 +52,7 @@ fork and setup
 launch and develop
    code           Open directory in VS Code devcontainer
    devcontainer   Start a devcontainer with stored defaultFeatures injected
+   session        Start a devcontainer with tmux and attach to a session
 
 configure
    config         Manage stored devcontainer default features
