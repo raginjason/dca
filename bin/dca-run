@@ -1,0 +1,120 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+show_help() {
+    cat >&2 <<EOF
+usage: dca run <directory> [<devcontainer-args>...]
+
+Run STANDALONE_PLAN.md unattended using Claude Code inside a devcontainer.
+Opens a tmux session with two panes: Claude Code executing the plan in one,
+a shell for monitoring in the other.
+
+If Claude Code is already running in the container, exits with an error.
+If a previous session was interrupted, prompts to resume.
+
+Requires STANDALONE_PLAN.md at the workspace root. Run /dca:plan in VS Code
+to create one.
+
+Examples:
+  dca run .
+  dca run ~/experiments/myrepo-feature
+  dca run . --remove-existing-container
+EOF
+}
+
+if [ $# -eq 0 ]; then
+    show_help
+    exit 1
+fi
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    show_help
+    exit 0
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+    echo "Error: jq is required but not found on PATH" >&2
+    exit 1
+fi
+
+if ! command -v devcontainer >/dev/null 2>&1; then
+    echo "Error: devcontainer CLI is required but not found on PATH" >&2
+    echo "       Install it with: npm install -g @devcontainers/cli" >&2
+    exit 1
+fi
+
+dir=$(cd "$1" && pwd)
+shift
+
+if [ ! -d "$dir" ]; then
+    echo "Error: '$dir' is not a directory" >&2
+    exit 1
+fi
+
+# Check for STANDALONE_PLAN.md before starting the container
+if [ ! -f "$dir/STANDALONE_PLAN.md" ]; then
+    echo "Error: STANDALONE_PLAN.md not found in $dir" >&2
+    echo "       Run /dca:plan in VS Code to create one." >&2
+    exit 1
+fi
+
+TMUX_FEATURE='{"ghcr.io/devcontainers-extra/features/tmux-apt-get:1": {}}'
+DCA_CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dca/config.json"
+
+if [ -f "$DCA_CONFIG_FILE" ]; then
+    additional_features="$(jq -c ". + $TMUX_FEATURE" "$DCA_CONFIG_FILE")"
+else
+    additional_features="$TMUX_FEATURE"
+fi
+
+set -o xtrace
+devcontainer up --workspace-folder "$dir" --additional-features "$additional_features" "$@"
+{ set +x; } 2>/dev/null
+
+if ! devcontainer exec --workspace-folder "$dir" sh -c 'command -v tmux >/dev/null 2>&1'; then
+    echo "Error: tmux not found in the container." >&2
+    echo "       Rebuild it with: dca run $(printf '%s' "$dir") --remove-existing-container" >&2
+    exit 1
+fi
+
+# Check if Claude Code is already running in the run session
+if devcontainer exec --workspace-folder "$dir" sh -c \
+    'tmux list-panes -t run -F "#{pane_current_command}" 2>/dev/null | head -1 | grep -qi claude'; then
+    echo "Error: Claude Code is already running in this container." >&2
+    echo "       Reattach with: dca session $(printf '%s' "$dir"), then: tmux attach-session -t run" >&2
+    exit 1
+fi
+
+# Check for an incomplete session in OUTCOME.md
+# An incomplete session has a ## Session header after the last ### Completed
+INCOMPLETE=0
+if devcontainer exec --workspace-folder "$dir" sh -c 'test -f OUTCOME.md' 2>/dev/null; then
+    if devcontainer exec --workspace-folder "$dir" \
+        awk '/^## Session/{s=NR} /^### Completed/{c=NR} END{exit !(s>c)}' OUTCOME.md 2>/dev/null; then
+        INCOMPLETE=1
+    fi
+fi
+
+if [ "$INCOMPLETE" = "1" ]; then
+    printf "Previous session appears incomplete. Resume? [Y/n] "
+    read -r answer || answer="y"
+    case "$answer" in
+        [nN]*) echo "Aborted." >&2; exit 0 ;;
+    esac
+fi
+
+# Kill any stale run session before creating a fresh one
+devcontainer exec --workspace-folder "$dir" sh -c \
+    'tmux kill-session -t run 2>/dev/null || true'
+
+# Create a split tmux session: Claude Code on the left, shell on the right
+set -o xtrace
+exec devcontainer exec --workspace-folder "$dir" sh -c '
+    tmux new-session -d -s run
+    tmux split-window -h -t run
+    tmux send-keys -t run:0.0 "claude \"/dca:implement\"" Enter
+    tmux select-pane -t run:0.1
+    exec tmux attach-session -t run
+'

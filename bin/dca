@@ -14,6 +14,7 @@ launch and develop
    code           Open directory in VS Code devcontainer
    devcontainer   Start a devcontainer with stored defaultFeatures injected
    session        Start a devcontainer with tmux and attach to a session
+   run            Run STANDALONE_PLAN.md unattended with Claude Code
 
 configure
    config         Manage stored devcontainer default features
@@ -39,6 +40,9 @@ case "$cmd" in
   session)
     exec "$(dirname "$0")/dca-session" "$@"
     ;;
+  run)
+    exec "$(dirname "$0")/dca-run" "$@"
+    ;;
   config)
     exec "$(dirname "$0")/dca-config" "$@"
     ;;
@@ -53,6 +57,7 @@ launch and develop
    code           Open directory in VS Code devcontainer
    devcontainer   Start a devcontainer with stored defaultFeatures injected
    session        Start a devcontainer with tmux and attach to a session
+   run            Run STANDALONE_PLAN.md unattended with Claude Code
 
 configure
    config         Manage stored devcontainer default features
