@@ -130,7 +130,7 @@ dca config clear
 
 | Command | Environment | What it does |
 |---|---|---|
-| `/dca:plan` | VS Code Claude extension | Runs plan mode to produce an approved plan, then exports it to `STANDALONE_PLAN.md` |
+| `/dca:plan` | VS Code Claude extension | Produces an approved plan through conversation, then exports it to `STANDALONE_PLAN.md` |
 | `/dca:implement` | Claude Code CLI (`dca run`) | Reads `STANDALONE_PLAN.md` + `OUTCOME.md`, reconciles state, executes unattended, writes progress and a closing summary to `OUTCOME.md` |
 
 `STANDALONE_PLAN.md` and `OUTCOME.md` live at the repo root and are gitignored by default.
@@ -139,11 +139,11 @@ dca config clear
 
 Claude's built-in plan mode is session-scoped — the plan lives in the conversation context and disappears when the session ends. `dca run` starts fresh with no knowledge of what was discussed in VS Code.
 
-`/dca:plan` bridges this gap. It runs plan mode to produce a structured, approved plan, then exports it as `STANDALONE_PLAN.md` — a file that persists across the context boundary. `/dca:implement` reads `STANDALONE_PLAN.md` at the start of the execution session and can run unattended with full context.
+`/dca:plan` bridges this gap. It produces a structured, approved plan through conversation, then exports it as `STANDALONE_PLAN.md` — a file that persists across the context boundary. `/dca:implement` reads `STANDALONE_PLAN.md` at the start of the execution session and can run unattended with full context.
 
 ### Example loop
 
-`/dca:plan` is a closing command — run it at the end of a planning conversation, not the start. Discuss the goal, decisions, constraints, and unknowns with Claude first. When you're ready, `/dca:plan` enters plan mode, resolves any remaining ambiguities, gets your approval, then writes `STANDALONE_PLAN.md`.
+`/dca:plan` is a closing command — run it at the end of a planning conversation, not the start. Discuss the goal, decisions, constraints, and unknowns with Claude first. When you're ready, `/dca:plan` resolves any remaining ambiguities, gets your approval, then writes `STANDALONE_PLAN.md`.
 
 ```
 # 1. Have a planning conversation in VS Code Claude extension
@@ -152,8 +152,8 @@ Claude's built-in plan mode is session-scoped — the plan lives in the conversa
 
 # 2. Export the approved plan
 /dca:plan
-# → enters plan mode, surfaces and resolves ambiguities, gets approval,
-#   then writes STANDALONE_PLAN.md with a concrete ordered set of steps
+# → surfaces and resolves ambiguities, presents the plan inline, asks
+#   "Save this DCA plan?", then writes STANDALONE_PLAN.md on confirmation
 
 # 3. Run unattended
 dca run .
@@ -162,8 +162,8 @@ dca run .
 
 # 4. Back in VS Code, plan the next iteration
 /dca:plan
-# → reads OUTCOME.md (completed, blocked, discovered), enters plan mode,
-#   resolves new ambiguities, writes the next section of STANDALONE_PLAN.md
+# → reads OUTCOME.md (completed, blocked, discovered), resolves new
+#   ambiguities, writes the next section of STANDALONE_PLAN.md
 ```
 
 If a session is interrupted or crashes, the next `dca run` detects the incomplete OUTCOME.md, prompts to resume, and picks up from the furthest safe point.
