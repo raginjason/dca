@@ -38,27 +38,13 @@ if [ ! -d "$dir" ]; then
   exit 1
 fi
 
-# Check for devcontainer configuration in standard locations
-devcontainer_found=0
-if [ -f "$dir/.devcontainer/devcontainer.json" ]; then
-  devcontainer_found=1
-elif [ -f "$dir/.devcontainer.json" ]; then
-  devcontainer_found=1
-elif [ -d "$dir/.devcontainer" ]; then
-  devcontainer_found=1
-fi
+hex=$(printf '%s' "$dir" | xxd -p -c 256)
 
-if [ $devcontainer_found -eq 0 ]; then
+if ! config=$(devcontainer read-configuration --workspace-folder "$dir" 2>/dev/null); then
   echo "Error: no devcontainer configuration found in '$dir'" >&2
-  echo "       Expected one of:" >&2
-  echo "       - $dir/.devcontainer/devcontainer.json" >&2
-  echo "       - $dir/.devcontainer.json" >&2
-  echo "       - $dir/.devcontainer/ directory" >&2
   exit 1
 fi
-
-hex=$(printf '%s' "$dir" | xxd -p -c 256)
-folder=$(basename "$dir")
+workspace_folder=$(printf '%s' "$config" | jq -r '.workspace.workspaceFolder')
 
 # Cursor Dev Containers resolves Docker via DOCKER_HOST, not the Docker CLI context.
 # If the active context uses a non-default socket (e.g. Rancher Desktop, Docker Desktop),
@@ -71,4 +57,4 @@ if [ -z "${DOCKER_HOST:-}" ]; then
 fi
 
 set -o xtrace
-cursor --folder-uri "vscode-remote://dev-container+${hex}/workspaces/${folder}"
+cursor --folder-uri "vscode-remote://dev-container+${hex}${workspace_folder}"
