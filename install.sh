@@ -23,49 +23,63 @@ DCA_INSTALL_DIR="${DCA_INSTALL_DIR:-${HOME}/.local/bin}"
 # Create install directory if it doesn't exist
 mkdir -p "$DCA_INSTALL_DIR"
 
-# Determine which release to install
-REPO="raginjason/dca"
-if [ -n "${DCA_VERSION:-}" ]; then
-  RELEASE="$DCA_VERSION"
-else
-  RELEASE=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" | grep -o '"tag_name": "[^"]*"' | head -1 | cut -d'"' -f4)
-fi
-
-if [ -z "$RELEASE" ]; then
-  echo "Error: Could not determine latest release" >&2
-  exit 1
-fi
-
-echo "Installing dca ${RELEASE} to ${DCA_INSTALL_DIR}"
-
-# Build or use override tarball URL
-if [ -n "${DCA_TARBALL_URL:-}" ]; then
-  TARBALL_URL="$DCA_TARBALL_URL"
-else
-  TARBALL_URL="https://github.com/${REPO}/releases/download/${RELEASE}/dca-${RELEASE}.tar.gz"
-fi
-TEMP_DIR=$(mktemp -d)
-trap 'rm -rf "$TEMP_DIR"' EXIT
-
-echo "Downloading from ${TARBALL_URL}..."
-curl -fsSL "$TARBALL_URL" | tar -xz -C "$TEMP_DIR"
-
-# Copy files
-cp "$TEMP_DIR/dca-${RELEASE}/bin/dca" "$DCA_INSTALL_DIR/"
-cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-fork" "$DCA_INSTALL_DIR/"
-cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-code" "$DCA_INSTALL_DIR/"
-cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-devcontainer" "$DCA_INSTALL_DIR/"
-cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-config" "$DCA_INSTALL_DIR/"
-cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-run" "$DCA_INSTALL_DIR/"
-
-# Make executable
-chmod +x "$DCA_INSTALL_DIR/dca" "$DCA_INSTALL_DIR/dca-fork" "$DCA_INSTALL_DIR/dca-code" "$DCA_INSTALL_DIR/dca-devcontainer" "$DCA_INSTALL_DIR/dca-config" "$DCA_INSTALL_DIR/dca-run"
-
-# Install Claude slash commands to ~/.claude/commands/
+# Detect local mode: if bin/ exists next to this script, install from local files
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CLAUDE_COMMANDS_DIR="${HOME}/.claude/commands"
 mkdir -p "$CLAUDE_COMMANDS_DIR"
-cp "$TEMP_DIR/dca-${RELEASE}/.claude/commands/dca:plan.md" "$CLAUDE_COMMANDS_DIR/"
-cp "$TEMP_DIR/dca-${RELEASE}/.claude/commands/dca:implement.md" "$CLAUDE_COMMANDS_DIR/"
+
+if [ -d "${SCRIPT_DIR}/bin" ]; then
+  echo "Installing dca from local source to ${DCA_INSTALL_DIR}"
+
+  cp "${SCRIPT_DIR}/bin/dca" "$DCA_INSTALL_DIR/"
+  cp "${SCRIPT_DIR}/bin/dca-fork" "$DCA_INSTALL_DIR/"
+  cp "${SCRIPT_DIR}/bin/dca-code" "$DCA_INSTALL_DIR/"
+  cp "${SCRIPT_DIR}/bin/dca-devcontainer" "$DCA_INSTALL_DIR/"
+  cp "${SCRIPT_DIR}/bin/dca-config" "$DCA_INSTALL_DIR/"
+  cp "${SCRIPT_DIR}/bin/dca-run" "$DCA_INSTALL_DIR/"
+
+  cp "${SCRIPT_DIR}/.claude/commands/dca:plan.md" "$CLAUDE_COMMANDS_DIR/"
+  cp "${SCRIPT_DIR}/.claude/commands/dca:implement.md" "$CLAUDE_COMMANDS_DIR/"
+else
+  # Determine which release to install
+  REPO="raginjason/dca"
+  if [ -n "${DCA_VERSION:-}" ]; then
+    RELEASE="$DCA_VERSION"
+  else
+    RELEASE=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" | grep -o '"tag_name": "[^"]*"' | head -1 | cut -d'"' -f4)
+  fi
+
+  if [ -z "$RELEASE" ]; then
+    echo "Error: Could not determine latest release" >&2
+    exit 1
+  fi
+
+  echo "Installing dca ${RELEASE} to ${DCA_INSTALL_DIR}"
+
+  # Build or use override tarball URL
+  if [ -n "${DCA_TARBALL_URL:-}" ]; then
+    TARBALL_URL="$DCA_TARBALL_URL"
+  else
+    TARBALL_URL="https://github.com/${REPO}/releases/download/${RELEASE}/dca-${RELEASE}.tar.gz"
+  fi
+  TEMP_DIR=$(mktemp -d)
+  trap 'rm -rf "$TEMP_DIR"' EXIT
+
+  echo "Downloading from ${TARBALL_URL}..."
+  curl -fsSL "$TARBALL_URL" | tar -xz -C "$TEMP_DIR"
+
+  cp "$TEMP_DIR/dca-${RELEASE}/bin/dca" "$DCA_INSTALL_DIR/"
+  cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-fork" "$DCA_INSTALL_DIR/"
+  cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-code" "$DCA_INSTALL_DIR/"
+  cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-devcontainer" "$DCA_INSTALL_DIR/"
+  cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-config" "$DCA_INSTALL_DIR/"
+  cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-run" "$DCA_INSTALL_DIR/"
+
+  chmod +x "$DCA_INSTALL_DIR/dca" "$DCA_INSTALL_DIR/dca-fork" "$DCA_INSTALL_DIR/dca-code" "$DCA_INSTALL_DIR/dca-devcontainer" "$DCA_INSTALL_DIR/dca-config" "$DCA_INSTALL_DIR/dca-run"
+
+  cp "$TEMP_DIR/dca-${RELEASE}/.claude/commands/dca:plan.md" "$CLAUDE_COMMANDS_DIR/"
+  cp "$TEMP_DIR/dca-${RELEASE}/.claude/commands/dca:implement.md" "$CLAUDE_COMMANDS_DIR/"
+fi
 
 echo "✓ Installation complete!"
 echo ""
