@@ -46,6 +46,14 @@ if ! config=$(devcontainer read-configuration --workspace-folder "$dir" 2>/dev/n
 fi
 workspace_folder=$(printf '%s' "$config" | jq -r '.workspace.workspaceFolder')
 
+# Inject dca slash commands so Claude Code inside the container can use /dca:plan and /dca:implement
+commands_src="$(dirname "$0")/../.claude/commands"
+mkdir -p "$dir/.claude/commands"
+cp "$commands_src"/*.md "$dir/.claude/commands/"
+if ! grep -qF '.claude/commands/dca:' "$dir/.gitignore" 2>/dev/null; then
+  printf '\n.claude/commands/dca:*.md\n' >> "$dir/.gitignore"
+fi
+
 # VS Code Dev Containers resolves Docker via DOCKER_HOST, not the Docker CLI context.
 # If the active context uses a non-default socket (e.g. Rancher Desktop, Docker Desktop),
 # export DOCKER_HOST so VS Code inherits the correct endpoint.
