@@ -12,6 +12,7 @@ fork and setup
 
 launch and develop
    code           Open directory in VS Code devcontainer
+   cursor         Open directory in Cursor devcontainer
    devcontainer   Start a devcontainer with stored defaultFeatures injected
    session        Start a devcontainer with tmux and attach to a session
    run            Run STANDALONE_PLAN.md unattended with Claude Code
@@ -34,6 +35,9 @@ case "$cmd" in
   code)
     exec "$(dirname "$0")/dca-code" "$@"
     ;;
+  cursor)
+    exec "$(dirname "$0")/dca-cursor" "$@"
+    ;;
   devcontainer)
     exec "$(dirname "$0")/dca-devcontainer" "$@"
     ;;
@@ -55,6 +59,7 @@ fork and setup
 
 launch and develop
    code           Open directory in VS Code devcontainer
+   cursor         Open directory in Cursor devcontainer
    devcontainer   Start a devcontainer with stored defaultFeatures injected
    session        Start a devcontainer with tmux and attach to a session
    run            Run STANDALONE_PLAN.md unattended with Claude Code
