@@ -65,5 +65,15 @@ fi
 hex=$(printf '%s' "$dir" | xxd -p -c 256)
 folder=$(basename "$dir")
 
+# VS Code Dev Containers resolves Docker via DOCKER_HOST, not the Docker CLI context.
+# If the active context uses a non-default socket (e.g. Rancher Desktop, Docker Desktop),
+# export DOCKER_HOST so VS Code inherits the correct endpoint.
+if [ -z "${DOCKER_HOST:-}" ]; then
+  docker_host=$(docker context inspect --format '{{.Endpoints.docker.Host}}' 2>/dev/null || true)
+  if [ -n "$docker_host" ] && [ "$docker_host" != "unix:///var/run/docker.sock" ]; then
+    export DOCKER_HOST="$docker_host"
+  fi
+fi
+
 set -o xtrace
 code --folder-uri "vscode-remote://dev-container+${hex}/workspaces/${folder}"
