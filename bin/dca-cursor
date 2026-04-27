@@ -1,0 +1,74 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+show_help() {
+  cat >&2 <<EOF
+usage: dca cursor <directory>
+
+Open a directory in Cursor with devcontainer support.
+
+Examples:
+  dca cursor .
+  dca cursor ~/experiments/myrepo-feature
+EOF
+}
+
+if [ $# -eq 0 ]; then
+  show_help
+  exit 1
+fi
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  show_help
+  exit 0
+fi
+
+if [ $# -ne 1 ]; then
+  echo "Error: cursor requires exactly 1 argument" >&2
+  show_help
+  exit 1
+fi
+
+dir=$(cd "$1" && pwd)
+
+if [ ! -d "$dir" ]; then
+  echo "Error: '$1' is not a directory" >&2
+  exit 1
+fi
+
+# Check for devcontainer configuration in standard locations
+devcontainer_found=0
+if [ -f "$dir/.devcontainer/devcontainer.json" ]; then
+  devcontainer_found=1
+elif [ -f "$dir/.devcontainer.json" ]; then
+  devcontainer_found=1
+elif [ -d "$dir/.devcontainer" ]; then
+  devcontainer_found=1
+fi
+
+if [ $devcontainer_found -eq 0 ]; then
+  echo "Error: no devcontainer configuration found in '$dir'" >&2
+  echo "       Expected one of:" >&2
+  echo "       - $dir/.devcontainer/devcontainer.json" >&2
+  echo "       - $dir/.devcontainer.json" >&2
+  echo "       - $dir/.devcontainer/ directory" >&2
+  exit 1
+fi
+
+hex=$(printf '%s' "$dir" | xxd -p -c 256)
+folder=$(basename "$dir")
+
+# Cursor Dev Containers resolves Docker via DOCKER_HOST, not the Docker CLI context.
+# If the active context uses a non-default socket (e.g. Rancher Desktop, Docker Desktop),
+# export DOCKER_HOST so Cursor inherits the correct endpoint.
+if [ -z "${DOCKER_HOST:-}" ]; then
+  docker_host=$(docker context inspect --format '{{.Endpoints.docker.Host}}' 2>/dev/null || true)
+  if [ -n "$docker_host" ] && [ "$docker_host" != "unix:///var/run/docker.sock" ]; then
+    export DOCKER_HOST="$docker_host"
+  fi
+fi
+
+set -o xtrace
+cursor --folder-uri "vscode-remote://dev-container+${hex}/workspaces/${folder}"
