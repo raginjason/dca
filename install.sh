@@ -56,9 +56,16 @@ cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-fork" "$DCA_INSTALL_DIR/"
 cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-code" "$DCA_INSTALL_DIR/"
 cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-devcontainer" "$DCA_INSTALL_DIR/"
 cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-config" "$DCA_INSTALL_DIR/"
+cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-run" "$DCA_INSTALL_DIR/"
 
 # Make executable
-chmod +x "$DCA_INSTALL_DIR/dca" "$DCA_INSTALL_DIR/dca-fork" "$DCA_INSTALL_DIR/dca-code" "$DCA_INSTALL_DIR/dca-devcontainer" "$DCA_INSTALL_DIR/dca-config"
+chmod +x "$DCA_INSTALL_DIR/dca" "$DCA_INSTALL_DIR/dca-fork" "$DCA_INSTALL_DIR/dca-code" "$DCA_INSTALL_DIR/dca-devcontainer" "$DCA_INSTALL_DIR/dca-config" "$DCA_INSTALL_DIR/dca-run"
+
+# Install Claude slash commands to ~/.claude/commands/
+CLAUDE_COMMANDS_DIR="${HOME}/.claude/commands"
+mkdir -p "$CLAUDE_COMMANDS_DIR"
+cp "$TEMP_DIR/dca-${RELEASE}/.claude/commands/dca:plan.md" "$CLAUDE_COMMANDS_DIR/"
+cp "$TEMP_DIR/dca-${RELEASE}/.claude/commands/dca:implement.md" "$CLAUDE_COMMANDS_DIR/"
 
 echo "✓ Installation complete!"
 echo ""

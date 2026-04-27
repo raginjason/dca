@@ -11,15 +11,17 @@ Quickly fork a repo and launch VS Code in a disposable devcontainer. No impact o
 ## Quick Start
 
 ```sh
-# Fork a repo efficiently (shares git objects, minimal disk usage)
-dca fork ~/original ~/experiment
+dca fork ~/original ~/experiment      # fork efficiently
+dca code ~/experiment                 # open in VS Code devcontainer
+```
 
-# Launch in VS Code devcontainer
-dca code .
+```
+/dca:plan        # end of VS Code planning session → writes STANDALONE_PLAN.md
+```
 
-# Use git normally inside container
-git branch -b feature-x
-git add/commit/push as usual
+```sh
+dca run ~/experiment                  # run STANDALONE_PLAN.md unattended
+dca session ~/experiment              # open tmux session inside container
 ```
 
 ## Commands
@@ -34,6 +36,7 @@ launch and develop
    code           Open directory in VS Code devcontainer
    devcontainer   Start a devcontainer with stored defaultFeatures injected
    session        Start a devcontainer with tmux and attach to a session
+   run            Run STANDALONE_PLAN.md unattended with Claude Code
 
 configure
    config         Manage stored devcontainer default features
@@ -78,6 +81,20 @@ The `-A` flag attaches to an existing `main` session if one exists, creating it 
 
 > **Tip:** Add `ghcr.io/devcontainers-extra/features/tmux-apt-get:1` to `dev.containers.defaultFeatures` in your VS Code or Cursor settings, then run `dca config import-vscode` (or `import-cursor`). This ensures tmux is present in every devcontainer you create — including ones opened directly by VS Code — so `dca session` always works on the first try without needing `--remove-existing-container`.
 
+### `dca run <directory>`
+
+Run `STANDALONE_PLAN.md` unattended using Claude Code. Requires a `STANDALONE_PLAN.md` at the workspace root — create one with `/dca:plan` in VS Code.
+
+Opens a tmux session named `run` with two panes: Claude Code executing the plan on the left, a shell for monitoring on the right.
+
+```sh
+dca run .
+dca run ~/experiments/myrepo-feature
+dca run . --remove-existing-container
+```
+
+If Claude Code is already running in the container, `dca run` exits with an error. If a previous session was interrupted (detected via `OUTCOME.md`), it prompts to resume before starting.
+
 ### `dca config <command>`
 
 Manage the stored devcontainer default features that `dca devcontainer` injects via `--additional-features`. Features are read from any VS Code-compatible `settings.json` and stored in `~/.config/dca/config.json`.
@@ -107,6 +124,54 @@ dca config show
 dca config clear
 ```
 
+## Planning and Execution Loop
+
+`dca` ships two Claude slash commands that close the loop between a planning session in the VS Code Claude extension and an unattended execution session via `dca run`.
+
+| Command | Environment | What it does |
+|---|---|---|
+| `/dca:plan` | VS Code Claude extension | Runs plan mode to produce an approved plan, then exports it to `STANDALONE_PLAN.md` |
+| `/dca:implement` | Claude Code CLI (`dca run`) | Reads `STANDALONE_PLAN.md` + `OUTCOME.md`, reconciles state, executes unattended, writes progress and a closing summary to `OUTCOME.md` |
+
+`STANDALONE_PLAN.md` and `OUTCOME.md` live at the repo root and are gitignored by default.
+
+### Why not just use Claude's plan mode?
+
+Claude's built-in plan mode is session-scoped — the plan lives in the conversation context and disappears when the session ends. `dca run` starts fresh with no knowledge of what was discussed in VS Code.
+
+`/dca:plan` bridges this gap. It runs plan mode to produce a structured, approved plan, then exports it as `STANDALONE_PLAN.md` — a file that persists across the context boundary. `/dca:implement` reads `STANDALONE_PLAN.md` at the start of the execution session and can run unattended with full context.
+
+### Example loop
+
+`/dca:plan` is a closing command — run it at the end of a planning conversation, not the start. Discuss the goal, decisions, constraints, and unknowns with Claude first. When you're ready, `/dca:plan` enters plan mode, resolves any remaining ambiguities, gets your approval, then writes `STANDALONE_PLAN.md`.
+
+```
+# 1. Have a planning conversation in VS Code Claude extension
+#    Discuss the goal, decisions, constraints, and unknowns with Claude.
+#    Work through the problem until you're ready to hand off to execution.
+
+# 2. Export the approved plan
+/dca:plan
+# → enters plan mode, surfaces and resolves ambiguities, gets approval,
+#   then writes STANDALONE_PLAN.md with a concrete ordered set of steps
+
+# 3. Run unattended
+dca run .
+# → starts the container, splits tmux into two panes, runs /dca:implement
+#   in one (Claude Code executing the plan) and a shell in the other
+
+# 4. Back in VS Code, plan the next iteration
+/dca:plan
+# → reads OUTCOME.md (completed, blocked, discovered), enters plan mode,
+#   resolves new ambiguities, writes the next section of STANDALONE_PLAN.md
+```
+
+If a session is interrupted or crashes, the next `dca run` detects the incomplete OUTCOME.md, prompts to resume, and picks up from the furthest safe point.
+
+The commands are installed to `~/.claude/commands/` by `install.sh` and are available globally in any project.
+
+> **Note:** The command files use colons in their filenames (`dca:plan.md`, `dca:implement.md`). Some `tar` implementations have trouble with colons when building archives. If you are packaging a release, verify that your tar version handles these filenames correctly.
+
 ## Requirements
 
 - Git
@@ -116,26 +181,20 @@ dca config clear
 ## Workflow Example
 
 ```sh
-# Start with an existing repo
-cd ~
-git clone https://github.com/user/myproject.git original
+# Fork a repo for an experiment
+dca fork ~/projects/myrepo ~/experiments/myrepo-feature
+cd ~/experiments/myrepo-feature
 
-# Fork it for an experiment
-dca fork original experiments/feature-x
-cd experiments/feature-x
+# Plan in VS Code Claude extension, then export the plan
+# /dca:plan
 
-# Launch in devcontainer
-dca code .
+# Run the plan unattended
+dca run .
+# → Claude Code executes in one tmux pane, shell in the other
+# → writes OUTCOME.md as it goes
 
-# Inside VS Code (running in container):
-git branch -b feature-x
-# - Agent makes changes, runs tests, commits
-# - Everything is sandboxed in the container
-# - No impact on your original working tree
-
-# When done, just delete the fork
-cd ~
-rm -rf experiments/feature-x
+# When done, discard the fork
+rm -rf ~/experiments/myrepo-feature
 ```
 
 ## Installation
@@ -163,7 +222,7 @@ Download the latest release tarball from [Releases](https://github.com/raginjaso
 
 ```sh
 tar -xzf dca-<version>.tar.gz -C ~/.local/bin
-chmod +x ~/.local/bin/dca ~/.local/bin/dca-fork ~/.local/bin/dca-code
+chmod +x ~/.local/bin/dca ~/.local/bin/dca-fork ~/.local/bin/dca-code ~/.local/bin/dca-devcontainer ~/.local/bin/dca-config ~/.local/bin/dca-run
 ```
 
 ### From source
