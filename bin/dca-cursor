@@ -47,9 +47,9 @@ fi
 workspace_folder=$(printf '%s' "$config" | jq -r '.workspace.workspaceFolder')
 
 # Inject dca slash commands so Claude Code inside the container can use /dca:plan and /dca:implement
-commands_src="$(dirname "$0")/../.claude/commands"
+commands_src="${HOME}/.claude/commands"
 mkdir -p "$dir/.claude/commands"
-cp "$commands_src"/*.md "$dir/.claude/commands/"
+cp "$commands_src/dca:"*.md "$dir/.claude/commands/"
 if ! grep -qF '.claude/commands/dca:' "$dir/.gitignore" 2>/dev/null; then
   printf '\n.claude/commands/dca:*.md\n' >> "$dir/.gitignore"
 fi
