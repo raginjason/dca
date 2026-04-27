@@ -39,13 +39,12 @@ if [ ! -d "$dir" ]; then
 fi
 
 hex=$(printf '%s' "$dir" | xxd -p -c 256)
-folder=$(basename "$dir")
 
-if ! devcontainer read-configuration --workspace-folder "$dir" > /dev/null 2>&1; then
+if ! config=$(devcontainer read-configuration --workspace-folder "$dir" 2>/dev/null); then
   echo "Error: no devcontainer configuration found in '$dir'" >&2
   exit 1
 fi
-workspace_folder="/workspaces/${folder}"
+workspace_folder=$(printf '%s' "$config" | jq -r '.workspace.workspaceFolder')
 
 # Cursor Dev Containers resolves Docker via DOCKER_HOST, not the Docker CLI context.
 # If the active context uses a non-default socket (e.g. Rancher Desktop, Docker Desktop),
