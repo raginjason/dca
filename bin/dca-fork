@@ -45,7 +45,9 @@ if [ -e "$target" ]; then
   exit 1
 fi
 
-remote="$(git -C "$ref_repo" config --local --get remote.origin.url)"
+if ! remote="$(git -C "$ref_repo" config --local --get remote.origin.url)"; then
+  remote="$ref_repo"
+fi
 branch="$(git -C "$ref_repo" symbolic-ref --short HEAD)"
 
 set -o xtrace
