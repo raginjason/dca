@@ -79,6 +79,15 @@ if [ -f "$HOME/.claude.json" ]; then
         'cat > /home/vscode/.claude.json' < "$HOME/.claude.json"
 fi
 
+# Ensure --dangerously-skip-permissions doesn't show its own interactive prompt
+devcontainer exec --workspace-folder "$dir" python3 -c "
+import json, os
+path = os.path.expanduser('~/.claude/settings.json')
+s = json.load(open(path)) if os.path.exists(path) else {}
+s.setdefault('permissions', {})['skipDangerousModePermissionPrompt'] = True
+json.dump(s, open(path, 'w'), indent=2)
+"
+
 if ! devcontainer exec --workspace-folder "$dir" sh -c 'command -v tmux >/dev/null 2>&1'; then
     echo "Error: tmux not found in the container." >&2
     echo "       Rebuild it with: dca run $(printf '%s' "$dir") --remove-existing-container" >&2
