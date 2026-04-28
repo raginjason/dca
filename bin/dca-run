@@ -73,6 +73,12 @@ set -o xtrace
 devcontainer up --workspace-folder "$dir" --additional-features "$additional_features" "$@"
 { set +x; } 2>/dev/null
 
+# Seed Claude Code state so it skips the onboarding wizard and login prompts
+if [ -f "$HOME/.claude.json" ]; then
+    devcontainer exec --workspace-folder "$dir" sh -c \
+        'cat > /home/vscode/.claude.json' < "$HOME/.claude.json"
+fi
+
 if ! devcontainer exec --workspace-folder "$dir" sh -c 'command -v tmux >/dev/null 2>&1'; then
     echo "Error: tmux not found in the container." >&2
     echo "       Rebuild it with: dca run $(printf '%s' "$dir") --remove-existing-container" >&2
@@ -114,7 +120,7 @@ set -o xtrace
 exec devcontainer exec --workspace-folder "$dir" sh -c '
     tmux new-session -d -s run
     tmux split-window -h -t run
-    tmux send-keys -t run:0.0 "claude \"/dca:implement\"" Enter
+    tmux send-keys -t run:0.0 "claude --dangerously-skip-permissions \"/dca:implement\"" Enter
     tmux select-pane -t run:0.1
     exec tmux attach-session -t run
 '
