@@ -28,7 +28,7 @@ _dca() {
     if [[ "$cur" == -* ]]; then
       COMPREPLY=($(compgen -W "-h --help help" -- "$cur"))
     else
-      COMPREPLY=($(compgen -W "fork code devcontainer config" -- "$cur"))
+      COMPREPLY=($(compgen -W "fork code cursor devcontainer tmux session run config" -- "$cur"))
     fi
     return 0
   fi
@@ -56,12 +56,10 @@ _dca() {
         _filedir -d
       fi
       ;;
-    devcontainer)
-      # 'dca devcontainer' subcommand
+    cursor|devcontainer|tmux|session|run)
       if [[ "$cur" == -* ]]; then
         COMPREPLY=($(compgen -W "-h --help" -- "$cur"))
       else
-        # First positional argument: directory path
         _filedir -d
       fi
       ;;

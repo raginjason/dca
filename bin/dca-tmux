@@ -5,16 +5,17 @@ set -o nounset
 
 show_help() {
     cat >&2 <<EOF
-usage: dca session <directory> [<devcontainer-args>...]
+usage: dca tmux <directory> [<devcontainer-args>...]
 
-Start a devcontainer for the given directory with tmux always installed, then
-attach to a persistent tmux session inside it. Stored features from 'dca config'
-are also injected alongside tmux.
+Ensure a devcontainer is running for the given directory, then attach to a
+persistent tmux session inside it. Tmux is automatically injected as a feature
+if the container needs to be (re)built. Stored features from 'dca config' are
+also injected.
 
 Examples:
-  dca session .
-  dca session ~/experiments/myrepo-feature
-  dca session . --remove-existing-container
+  dca tmux .
+  dca tmux ~/experiments/myrepo-feature
+  dca tmux . --remove-existing-container
 EOF
 }
 
@@ -51,7 +52,7 @@ fi
 . "$(dirname "$0")/dca-lib"
 
 dca_up_with_tmux "$dir" "$@"
-dca_require_tmux "$dir" "dca session $(printf '%s' "$dir") --remove-existing-container"
+dca_require_tmux "$dir" "dca tmux $(printf '%s' "$dir") --remove-existing-container"
 
 set -o xtrace
 exec devcontainer exec --workspace-folder "$dir" tmux new-session -A -s main

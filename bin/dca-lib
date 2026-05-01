@@ -1,0 +1,33 @@
+#!/bin/sh
+# Shared helpers sourced by dca commands. Do not execute directly.
+
+TMUX_FEATURE='{"ghcr.io/devcontainers-extra/features/tmux-apt-get:1": {}}'
+DCA_CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dca/config.json"
+
+# Start a devcontainer with tmux and stored dca config features injected.
+# Usage: dca_up_with_tmux <dir> [devcontainer-up-args...]
+dca_up_with_tmux() {
+    _up_dir="$1"
+    shift
+    if [ -f "$DCA_CONFIG_FILE" ]; then
+        _up_features="$(jq -c ". + $TMUX_FEATURE" "$DCA_CONFIG_FILE")"
+    else
+        _up_features="$TMUX_FEATURE"
+    fi
+    set -o xtrace
+    devcontainer up --workspace-folder "$_up_dir" --additional-features "$_up_features" "$@"
+    { set +x; } 2>/dev/null
+}
+
+# Verify tmux is available in the container, exit with error if not.
+# Usage: dca_require_tmux <dir> <rebuild-command>
+dca_require_tmux() {
+    _rt_dir="$1"
+    _rt_rebuild="$2"
+    if ! devcontainer exec --workspace-folder "$_rt_dir" sh -c 'command -v tmux >/dev/null 2>&1'; then
+        echo "Error: tmux not found in the container." >&2
+        echo "       The container was likely built before tmux was added." >&2
+        echo "       Rebuild it with: $_rt_rebuild" >&2
+        exit 1
+    fi
+}
