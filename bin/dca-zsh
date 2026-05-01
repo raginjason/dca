@@ -1,0 +1,55 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+show_help() {
+    cat >&2 <<EOF
+usage: dca zsh <directory> [<devcontainer-args>...]
+
+Ensure a devcontainer is running for the given directory, then open a zsh
+shell inside it. Stored features from 'dca config' are injected.
+
+Examples:
+  dca zsh .
+  dca zsh ~/experiments/myrepo-feature
+  dca zsh . --remove-existing-container
+EOF
+}
+
+if [ $# -eq 0 ]; then
+    show_help
+    exit 1
+fi
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    show_help
+    exit 0
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+    echo "Error: jq is required but not found on PATH" >&2
+    exit 1
+fi
+
+if ! command -v devcontainer >/dev/null 2>&1; then
+    echo "Error: devcontainer CLI is required but not found on PATH" >&2
+    echo "       Install it with: npm install -g @devcontainers/cli" >&2
+    exit 1
+fi
+
+dir=$(cd "$1" && pwd)
+shift
+
+if [ ! -d "$dir" ]; then
+    echo "Error: '$dir' is not a directory" >&2
+    exit 1
+fi
+
+# shellcheck source=dca-lib
+. "$(dirname "$0")/dca-lib"
+
+dca_up "$dir" "$@"
+
+set -o xtrace
+exec devcontainer exec --workspace-folder "$dir" zsh
