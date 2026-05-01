@@ -34,9 +34,13 @@ if [ -d "${SCRIPT_DIR}/bin" ]; then
   cp "${SCRIPT_DIR}/bin/dca" "$DCA_INSTALL_DIR/"
   cp "${SCRIPT_DIR}/bin/dca-fork" "$DCA_INSTALL_DIR/"
   cp "${SCRIPT_DIR}/bin/dca-code" "$DCA_INSTALL_DIR/"
+  cp "${SCRIPT_DIR}/bin/dca-cursor" "$DCA_INSTALL_DIR/"
   cp "${SCRIPT_DIR}/bin/dca-devcontainer" "$DCA_INSTALL_DIR/"
   cp "${SCRIPT_DIR}/bin/dca-config" "$DCA_INSTALL_DIR/"
+  cp "${SCRIPT_DIR}/bin/dca-session" "$DCA_INSTALL_DIR/"
   cp "${SCRIPT_DIR}/bin/dca-run" "$DCA_INSTALL_DIR/"
+
+  chmod +x "$DCA_INSTALL_DIR/dca" "$DCA_INSTALL_DIR/dca-fork" "$DCA_INSTALL_DIR/dca-code" "$DCA_INSTALL_DIR/dca-cursor" "$DCA_INSTALL_DIR/dca-devcontainer" "$DCA_INSTALL_DIR/dca-config" "$DCA_INSTALL_DIR/dca-session" "$DCA_INSTALL_DIR/dca-run"
 
   cp "${SCRIPT_DIR}/.claude/commands/dca:plan.md" "$CLAUDE_COMMANDS_DIR/"
   cp "${SCRIPT_DIR}/.claude/commands/dca:implement.md" "$CLAUDE_COMMANDS_DIR/"
