@@ -60,18 +60,10 @@ if [ ! -f "$dir/STANDALONE_PLAN.md" ]; then
     exit 1
 fi
 
-TMUX_FEATURE='{"ghcr.io/devcontainers-extra/features/tmux-apt-get:1": {}}'
-DCA_CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dca/config.json"
+# shellcheck source=dca-lib
+. "$(dirname "$0")/dca-lib"
 
-if [ -f "$DCA_CONFIG_FILE" ]; then
-    additional_features="$(jq -c ". + $TMUX_FEATURE" "$DCA_CONFIG_FILE")"
-else
-    additional_features="$TMUX_FEATURE"
-fi
-
-set -o xtrace
-devcontainer up --workspace-folder "$dir" --additional-features "$additional_features" "$@"
-{ set +x; } 2>/dev/null
+dca_up_with_tmux "$dir" "$@"
 
 # Seed Claude Code state so it skips the onboarding wizard and login prompts
 if [ -f "$HOME/.claude.json" ]; then
@@ -88,11 +80,7 @@ s.setdefault('permissions', {})['skipDangerousModePermissionPrompt'] = True
 json.dump(s, open(path, 'w'), indent=2)
 "
 
-if ! devcontainer exec --workspace-folder "$dir" sh -c 'command -v tmux >/dev/null 2>&1'; then
-    echo "Error: tmux not found in the container." >&2
-    echo "       Rebuild it with: dca run $(printf '%s' "$dir") --remove-existing-container" >&2
-    exit 1
-fi
+dca_require_tmux "$dir" "dca run $(printf '%s' "$dir") --remove-existing-container"
 
 # Check if Claude Code is already running in the run session
 if devcontainer exec --workspace-folder "$dir" sh -c \
