@@ -31,7 +31,7 @@ Download the latest release tarball from [Releases](https://github.com/raginjaso
 
 ```sh
 tar -xzf dca-<version>.tar.gz -C ~/.local/bin
-chmod +x ~/.local/bin/dca ~/.local/bin/dca-fork ~/.local/bin/dca-code
+chmod +x ~/.local/bin/dca ~/.local/bin/dca-fork ~/.local/bin/dca-code ~/.local/bin/dca-cursor ~/.local/bin/dca-devcontainer ~/.local/bin/dca-config ~/.local/bin/dca-session ~/.local/bin/dca-run
 ```
 
 ### From Source
