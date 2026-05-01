@@ -14,6 +14,8 @@ launch and develop
    code           Open directory in VS Code devcontainer
    cursor         Open directory in Cursor devcontainer
    devcontainer   Start a devcontainer with stored defaultFeatures injected
+   bash           Ensure a devcontainer is running and open a bash shell
+   zsh            Ensure a devcontainer is running and open a zsh shell
    tmux           Ensure a devcontainer is running and attach to a tmux session
    session        Start a devcontainer with tmux and attach to a session
    run            Run STANDALONE_PLAN.md unattended with Claude Code
@@ -42,6 +44,12 @@ case "$cmd" in
   devcontainer)
     exec "$(dirname "$0")/dca-devcontainer" "$@"
     ;;
+  bash)
+    exec "$(dirname "$0")/dca-bash" "$@"
+    ;;
+  zsh)
+    exec "$(dirname "$0")/dca-zsh" "$@"
+    ;;
   tmux)
     exec "$(dirname "$0")/dca-tmux" "$@"
     ;;
@@ -65,6 +73,8 @@ launch and develop
    code           Open directory in VS Code devcontainer
    cursor         Open directory in Cursor devcontainer
    devcontainer   Start a devcontainer with stored defaultFeatures injected
+   bash           Ensure a devcontainer is running and open a bash shell
+   zsh            Ensure a devcontainer is running and open a zsh shell
    tmux           Ensure a devcontainer is running and attach to a tmux session
    session        Start a devcontainer with tmux and attach to a session
    run            Run STANDALONE_PLAN.md unattended with Claude Code

@@ -4,6 +4,25 @@
 TMUX_FEATURE='{"ghcr.io/devcontainers-extra/features/tmux-apt-get:1": {}}'
 DCA_CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dca/config.json"
 
+# Start a devcontainer with stored dca config features injected.
+# Usage: dca_up <dir> [devcontainer-up-args...]
+dca_up() {
+    _up_dir="$1"
+    shift
+    if [ -f "$DCA_CONFIG_FILE" ]; then
+        _up_features="$(jq -c '. // empty' "$DCA_CONFIG_FILE")"
+    else
+        _up_features=""
+    fi
+    set -o xtrace
+    if [ -n "$_up_features" ]; then
+        devcontainer up --workspace-folder "$_up_dir" --additional-features "$_up_features" "$@"
+    else
+        devcontainer up --workspace-folder "$_up_dir" "$@"
+    fi
+    { set +x; } 2>/dev/null
+}
+
 # Start a devcontainer with tmux and stored dca config features injected.
 # Usage: dca_up_with_tmux <dir> [devcontainer-up-args...]
 dca_up_with_tmux() {
