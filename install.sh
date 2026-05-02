@@ -38,11 +38,13 @@ if [ -d "${SCRIPT_DIR}/bin" ]; then
   cp "${SCRIPT_DIR}/bin/dca-cursor" "$DCA_INSTALL_DIR/"
   cp "${SCRIPT_DIR}/bin/dca-devcontainer" "$DCA_INSTALL_DIR/"
   cp "${SCRIPT_DIR}/bin/dca-config" "$DCA_INSTALL_DIR/"
+  cp "${SCRIPT_DIR}/bin/dca-bash" "$DCA_INSTALL_DIR/"
+  cp "${SCRIPT_DIR}/bin/dca-zsh" "$DCA_INSTALL_DIR/"
   cp "${SCRIPT_DIR}/bin/dca-session" "$DCA_INSTALL_DIR/"
   cp "${SCRIPT_DIR}/bin/dca-tmux" "$DCA_INSTALL_DIR/"
   cp "${SCRIPT_DIR}/bin/dca-run" "$DCA_INSTALL_DIR/"
 
-  chmod +x "$DCA_INSTALL_DIR/dca" "$DCA_INSTALL_DIR/dca-fork" "$DCA_INSTALL_DIR/dca-code" "$DCA_INSTALL_DIR/dca-cursor" "$DCA_INSTALL_DIR/dca-devcontainer" "$DCA_INSTALL_DIR/dca-config" "$DCA_INSTALL_DIR/dca-session" "$DCA_INSTALL_DIR/dca-tmux" "$DCA_INSTALL_DIR/dca-run"
+  chmod +x "$DCA_INSTALL_DIR/dca" "$DCA_INSTALL_DIR/dca-fork" "$DCA_INSTALL_DIR/dca-code" "$DCA_INSTALL_DIR/dca-cursor" "$DCA_INSTALL_DIR/dca-devcontainer" "$DCA_INSTALL_DIR/dca-bash" "$DCA_INSTALL_DIR/dca-zsh" "$DCA_INSTALL_DIR/dca-config" "$DCA_INSTALL_DIR/dca-session" "$DCA_INSTALL_DIR/dca-tmux" "$DCA_INSTALL_DIR/dca-run"
 
   cp "${SCRIPT_DIR}/.claude/commands/dca:plan.md" "$CLAUDE_COMMANDS_DIR/"
   cp "${SCRIPT_DIR}/.claude/commands/dca:implement.md" "$CLAUDE_COMMANDS_DIR/"
@@ -81,11 +83,13 @@ else
   cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-cursor" "$DCA_INSTALL_DIR/"
   cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-devcontainer" "$DCA_INSTALL_DIR/"
   cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-config" "$DCA_INSTALL_DIR/"
+  cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-bash" "$DCA_INSTALL_DIR/"
+  cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-zsh" "$DCA_INSTALL_DIR/"
   cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-session" "$DCA_INSTALL_DIR/"
   cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-tmux" "$DCA_INSTALL_DIR/"
   cp "$TEMP_DIR/dca-${RELEASE}/bin/dca-run" "$DCA_INSTALL_DIR/"
 
-  chmod +x "$DCA_INSTALL_DIR/dca" "$DCA_INSTALL_DIR/dca-fork" "$DCA_INSTALL_DIR/dca-code" "$DCA_INSTALL_DIR/dca-cursor" "$DCA_INSTALL_DIR/dca-devcontainer" "$DCA_INSTALL_DIR/dca-config" "$DCA_INSTALL_DIR/dca-session" "$DCA_INSTALL_DIR/dca-tmux" "$DCA_INSTALL_DIR/dca-run"
+  chmod +x "$DCA_INSTALL_DIR/dca" "$DCA_INSTALL_DIR/dca-fork" "$DCA_INSTALL_DIR/dca-code" "$DCA_INSTALL_DIR/dca-cursor" "$DCA_INSTALL_DIR/dca-devcontainer" "$DCA_INSTALL_DIR/dca-bash" "$DCA_INSTALL_DIR/dca-zsh" "$DCA_INSTALL_DIR/dca-config" "$DCA_INSTALL_DIR/dca-session" "$DCA_INSTALL_DIR/dca-tmux" "$DCA_INSTALL_DIR/dca-run"
 
   cp "$TEMP_DIR/dca-${RELEASE}/.claude/commands/dca:plan.md" "$CLAUDE_COMMANDS_DIR/"
   cp "$TEMP_DIR/dca-${RELEASE}/.claude/commands/dca:implement.md" "$CLAUDE_COMMANDS_DIR/"
