@@ -34,7 +34,11 @@ fork and setup
 
 launch and develop
    code           Open directory in VS Code devcontainer
+   cursor         Open directory in Cursor devcontainer
    devcontainer   Start a devcontainer with stored defaultFeatures injected
+   bash           Ensure a devcontainer is running and open a bash shell
+   zsh            Ensure a devcontainer is running and open a zsh shell
+   tmux           Ensure a devcontainer is running and attach to a tmux session
    session        Start a devcontainer with tmux and attach to a session
    run            Run STANDALONE_PLAN.md unattended with Claude Code
 
@@ -58,6 +62,45 @@ Launch VS Code with the directory opened in a devcontainer context.
 dca code ~/experiments/myrepo-feature
 # or from inside the directory:
 dca code .
+```
+
+### `dca cursor <directory>`
+
+Launch Cursor with the directory opened in a devcontainer context. Behaves identically to `dca code` but opens Cursor instead of VS Code.
+
+```sh
+dca cursor ~/experiments/myrepo-feature
+dca cursor .
+```
+
+### `dca bash <directory> [<devcontainer-args>...]`
+
+Ensure a devcontainer is running for the given directory, then open a bash shell inside it. Stored features from `dca config` are injected.
+
+```sh
+dca bash .
+dca bash ~/experiments/myrepo-feature
+dca bash . --remove-existing-container
+```
+
+### `dca zsh <directory> [<devcontainer-args>...]`
+
+Ensure a devcontainer is running for the given directory, then open a zsh shell inside it. Stored features from `dca config` are injected.
+
+```sh
+dca zsh .
+dca zsh ~/experiments/myrepo-feature
+dca zsh . --remove-existing-container
+```
+
+### `dca tmux <directory> [<devcontainer-args>...]`
+
+Ensure a devcontainer is running for the given directory, then attach to a tmux session inside it. Unlike `dca session`, tmux is not automatically injected — the container must already have tmux installed.
+
+```sh
+dca tmux .
+dca tmux ~/experiments/myrepo-feature
+dca tmux . --remove-existing-container
 ```
 
 ### `dca session <directory>`
