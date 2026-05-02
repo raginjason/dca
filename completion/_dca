@@ -24,7 +24,7 @@ emulate -L zsh
 _dca() {
   local -a words=("${(@)words}")
   local current="$words[CURRENT]"
-  local -a subcommands=('fork' 'code' 'cursor' 'devcontainer' 'tmux' 'session' 'run' 'config')
+  local -a subcommands=('fork' 'code' 'cursor' 'devcontainer' 'bash' 'zsh' 'tmux' 'session' 'run' 'config')
   local -a options=('-h' '--help')
 
   # Suggest subcommands or options at position 2
@@ -48,7 +48,7 @@ _dca() {
         _directories
       fi
       ;;
-    code|cursor|devcontainer|tmux|session|run)
+    code|cursor|devcontainer|bash|zsh|tmux|session|run)
       if [[ "$current" == -* ]]; then
         _describe -t options "option" options
       else
