@@ -215,6 +215,16 @@ The commands are installed to `~/.claude/commands/` by `install.sh` and are avai
 
 > **Note:** The command files use colons in their filenames (`dca:plan.md`, `dca:implement.md`). Some `tar` implementations have trouble with colons when building archives. If you are packaging a release, verify that your tar version handles these filenames correctly.
 
+## Architecture Decision Records
+
+Design decisions are recorded as ADRs in [`doc/adr/`](doc/adr/), managed with [adr-tools](https://github.com/npryce/adr-tools) (installed automatically in the devcontainer). See [ADR 1](doc/adr/0001-record-architecture-decisions.md) and [ADR 2](doc/adr/0002-use-adr-tools-to-manage-adrs.md).
+
+```sh
+adr new "Title of decision"        # create a new record
+adr new -s 3 "Replacement"         # supersede record 3
+adr list
+```
+
 ## Requirements
 
 - Git
