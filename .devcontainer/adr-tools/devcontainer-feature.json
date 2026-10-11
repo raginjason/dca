@@ -1,0 +1,13 @@
+{
+  "id": "adr-tools",
+  "version": "1.0.0",
+  "name": "adr-tools",
+  "description": "Installs adr-tools (https://github.com/npryce/adr-tools) for managing Architecture Decision Records.",
+  "options": {
+    "version": {
+      "type": "string",
+      "default": "3.0.0",
+      "description": "adr-tools git tag to install."
+    }
+  }
+}
