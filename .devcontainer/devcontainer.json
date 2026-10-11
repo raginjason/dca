@@ -4,7 +4,8 @@
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers-extra/features/shellcheck:1": {},
-    "ghcr.io/devcontainers-extra/features/shfmt:1": {}
+    "ghcr.io/devcontainers-extra/features/shfmt:1": {},
+    "./adr-tools": {}
   },
   "containerEnv":{
     "NODE_OPTIONS": "--dns-result-order=ipv4first"
