@@ -1,0 +1,6 @@
+{
+  "id": "dev-tools",
+  "version": "1.0.0",
+  "name": "dev-tools",
+  "description": "Installs the pinned versions of adr-tools, shellcheck and shfmt listed in versions.env."
+}

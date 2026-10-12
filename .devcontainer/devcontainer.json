@@ -1,11 +1,8 @@
 {
   "name": "dca",
-  "image": "mcr.microsoft.com/devcontainers/base:debian",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
   "features": {
-    "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers-extra/features/shellcheck:1": {},
-    "ghcr.io/devcontainers-extra/features/shfmt:1": {},
-    "./adr-tools": {}
+    "./dev-tools": {}
   },
   "containerEnv":{
     "NODE_OPTIONS": "--dns-result-order=ipv4first"

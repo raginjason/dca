@@ -1,0 +1,23 @@
+name: dev-tools
+
+on:
+  pull_request:
+    paths:
+      - ".devcontainer/**"
+      - ".claude/hooks/**"
+      - ".github/workflows/dev-tools.yml"
+
+jobs:
+  install:
+    # Same OS as the devcontainer base image and Claude cloud (doc/adr/0004).
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned tools
+        run: sudo .devcontainer/dev-tools/install.sh
+      - name: Verify versions match versions.env and the devcontainer OS
+        run: .devcontainer/dev-tools/install.sh --check
+      - name: Lint scripts
+        run: |
+          shellcheck -x .devcontainer/dev-tools/install.sh .claude/hooks/session-start.sh
+          shfmt -i 4 -ci -d .devcontainer/dev-tools/install.sh .claude/hooks/session-start.sh

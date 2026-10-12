@@ -8,6 +8,8 @@ Accepted
 
 Amends [1. Record architecture decisions](0001-record-architecture-decisions.md)
 
+Amended by [4. Support Claude cloud as a second development environment](0004-support-claude-cloud-as-a-second-development-environment.md)
+
 ## Context
 
 ADR 1 adopts Architecture Decision Records but does not say how they are
