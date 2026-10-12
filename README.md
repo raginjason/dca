@@ -217,7 +217,9 @@ The commands are installed to `~/.claude/commands/` by `install.sh` and are avai
 
 ## Architecture Decision Records
 
-Design decisions are recorded as ADRs in [`doc/adr/`](doc/adr/), managed with [adr-tools](https://github.com/npryce/adr-tools) (installed automatically in the devcontainer). See [ADR 1](doc/adr/0001-record-architecture-decisions.md) and [ADR 2](doc/adr/0002-use-adr-tools-to-manage-adrs.md).
+Design decisions are recorded as ADRs in [`doc/adr/`](doc/adr/), managed with [adr-tools](https://github.com/npryce/adr-tools) (installed automatically in the devcontainer and in Claude cloud sessions). See [ADR 1](doc/adr/0001-record-architecture-decisions.md) and [ADR 2](doc/adr/0002-use-adr-tools-to-manage-adrs.md).
+
+Two development environments are supported: the devcontainer ([ADR 3](doc/adr/0003-use-devcontainers-for-the-development-environment.md)) and Claude cloud ([ADR 4](doc/adr/0004-support-claude-cloud-as-a-second-development-environment.md)). In Claude cloud, `.claude/hooks/session-start.sh` runs the same installer as the devcontainer (`.devcontainer/dev-tools/`), so shellcheck, shfmt and adr-tools are at the same pinned versions in both (see ADR 4). Change versions in `.devcontainer/dev-tools/versions.env`; run `.devcontainer/dev-tools/install.sh --check` to compare an environment against them.
 
 ```sh
 adr new "Title of decision"        # create a new record
