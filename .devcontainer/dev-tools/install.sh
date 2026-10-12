@@ -2,6 +2,10 @@
 # Install the dev tools (adr-tools, shellcheck, shfmt, gh) at the versions pinned
 # in versions.env. Runs as root, both at devcontainer image build time and from
 # the Claude cloud SessionStart hook. Idempotent.
+#
+#   install.sh           install anything missing or at the wrong version
+#   install.sh --check   report drift from versions.env and the devcontainer OS;
+#                        exits 1 on a tool or OS mismatch (gh is note-only)
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -61,6 +65,35 @@ adr_version() { cat /usr/local/lib/adr-tools/.version 2>/dev/null || true; }
 shellcheck_version() { shellcheck --version 2>/dev/null | sed -n 's/^version: //p'; }
 shfmt_version() { shfmt --version 2>/dev/null | sed 's/^v//'; }
 gh_version() { gh --version 2>/dev/null | sed -n '1s/^gh version \([^ ]*\).*/\1/p'; }
+
+check() {
+    local status=0 name want have os_want os_have
+    for name in adr:"$ADR_TOOLS_VERSION" shellcheck:"$SHELLCHECK_VERSION" shfmt:"$SHFMT_VERSION"; do
+        want="${name#*:}" name="${name%%:*}"
+        have="$("${name}_version")"
+        if [ "$have" != "$want" ]; then
+            echo "dev-tools: DRIFT $name is '${have:-not installed}', pinned $want" >&2
+            status=1
+        fi
+    done
+    have="$(gh_version)"
+    [ "$have" = "$GH_VERSION" ] ||
+        echo "dev-tools: note: gh is '${have:-not installed}', pinned $GH_VERSION (not enforced)" >&2
+
+    # The devcontainer base image tracks the Claude cloud OS (see doc/adr/0004).
+    os_want="$(sed -n 's|.*devcontainers/base:\([a-z]*\)-\([0-9.]*\)".*|\1-\2|p' "$here/../devcontainer.json")"
+    os_have="$(. /etc/os-release && echo "$ID-$VERSION_ID")"
+    if [ -n "$os_want" ] && [ "$os_have" != "$os_want" ]; then
+        echo "dev-tools: DRIFT OS is $os_have, devcontainer base is $os_want" >&2
+        status=1
+    fi
+    return "$status"
+}
+
+if [ "${1:-}" = "--check" ]; then
+    check
+    exit
+fi
 
 [ "$(adr_version)" = "$ADR_TOOLS_VERSION" ] || install_adr_tools
 [ "$(shellcheck_version)" = "$SHELLCHECK_VERSION" ] || install_shellcheck

@@ -12,3 +12,7 @@ sudo=""
 # Same installer and pinned versions (versions.env) as the devcontainer feature.
 # It needs root and is a no-op when the tools are already at the pinned versions.
 $sudo bash "$root/.devcontainer/dev-tools/install.sh"
+
+# Surface drift between this environment and the devcontainer (ADR 4). Warnings
+# only: a mismatch should be visible, not block the session.
+bash "$root/.devcontainer/dev-tools/install.sh" --check || true
