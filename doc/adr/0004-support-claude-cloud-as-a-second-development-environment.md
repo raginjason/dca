@@ -10,6 +10,8 @@ Amends [2. Use adr-tools to manage ADRs](0002-use-adr-tools-to-manage-adrs.md)
 
 Amends [3. Use devcontainers for the development environment](0003-use-devcontainers-for-the-development-environment.md)
 
+Amended by [5. Keep cloud environment network requirements in the repo](0005-keep-cloud-environment-network-requirements-in-the-repo.md)
+
 ## Context
 
 Work on dca is also done in Claude Code on the web (Claude cloud), which runs

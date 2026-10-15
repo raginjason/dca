@@ -6,6 +6,10 @@
 #   install.sh           install anything missing or at the wrong version
 #   install.sh --check   report drift from versions.env and the devcontainer OS;
 #                        exits 1 on a tool or OS mismatch (gh is note-only)
+#   install.sh --hosts   print the hosts setup needs (hosts.txt), for pasting into
+#                        a Claude cloud environment's allowed domains
+#   install.sh --preflight  test that each of those hosts is reachable; exits 1
+#                        if any is blocked
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -90,10 +94,35 @@ check() {
     return "$status"
 }
 
-if [ "${1:-}" = "--check" ]; then
-    check
-    exit
-fi
+hosts() { sed 's/#.*//' "$here/hosts.txt" | awk 'NF { print $1 }'; }
+
+preflight() {
+    local host status=0
+    while read -r host; do
+        # A host the network policy blocks fails at the proxy; any HTTP answer,
+        # even an error status, means it is reachable.
+        if ! curl -sS -o /dev/null --max-time 8 "https://$host/" 2>/dev/null; then
+            echo "dev-tools: BLOCKED cannot reach $host; add it to the environment's allowed domains (install.sh --hosts lists them all)" >&2
+            status=1
+        fi
+    done < <(hosts)
+    return "$status"
+}
+
+case "${1:-}" in
+    --check)
+        check
+        exit
+        ;;
+    --hosts)
+        hosts
+        exit
+        ;;
+    --preflight)
+        preflight
+        exit
+        ;;
+esac
 
 [ "$(adr_version)" = "$ADR_TOOLS_VERSION" ] || install_adr_tools
 [ "$(shellcheck_version)" = "$SHELLCHECK_VERSION" ] || install_shellcheck

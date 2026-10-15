@@ -221,6 +221,8 @@ Design decisions are recorded as ADRs in [`doc/adr/`](doc/adr/), managed with [a
 
 Two development environments are supported: the devcontainer ([ADR 3](doc/adr/0003-use-devcontainers-for-the-development-environment.md)) and Claude cloud ([ADR 4](doc/adr/0004-support-claude-cloud-as-a-second-development-environment.md)). In Claude cloud, `.claude/hooks/session-start.sh` runs the same installer as the devcontainer (`.devcontainer/dev-tools/`), so shellcheck, shfmt and adr-tools are at the same pinned versions in both (see ADR 4). Change versions in `.devcontainer/dev-tools/versions.env`; run `.devcontainer/dev-tools/install.sh --check` to compare an environment against them.
 
+A Claude cloud environment with restricted network access must allow the hosts that setup uses. Run `.devcontainer/dev-tools/install.sh --hosts` to list them for pasting into the environment's allowed domains ([ADR 5](doc/adr/0005-keep-cloud-environment-network-requirements-in-the-repo.md)); session start warns about any that are blocked.
+
 ```sh
 adr new "Title of decision"        # create a new record
 adr new -s 3 "Replacement"         # supersede record 3

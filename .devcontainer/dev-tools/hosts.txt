@@ -1,0 +1,8 @@
+# Hosts that environment setup needs to reach, one per line. A Claude cloud
+# environment with a restricted network policy must allow all of them.
+# `install.sh --hosts` prints this list; `install.sh --preflight` tests it;
+# CI checks that every host used in the setup files is listed (doc/adr/0005).
+github.com                           # release downloads and git clone
+release-assets.githubusercontent.com # where github.com release downloads redirect
+archive.ubuntu.com                   # apt, only when xz-utils is missing
+mcr.microsoft.com                    # devcontainer base image
