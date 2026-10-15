@@ -17,7 +17,12 @@ jobs:
         run: sudo .devcontainer/dev-tools/install.sh
       - name: Verify versions match versions.env and the devcontainer OS
         run: .devcontainer/dev-tools/install.sh --check
+      - name: Verify every setup host is listed in hosts.txt
+        run: .devcontainer/dev-tools/check-hosts-listed.sh
+      - name: Verify the listed hosts are reachable
+        run: .devcontainer/dev-tools/install.sh --preflight
       - name: Lint scripts
         run: |
-          shellcheck -x .devcontainer/dev-tools/install.sh .claude/hooks/session-start.sh
-          shfmt -i 4 -ci -d .devcontainer/dev-tools/install.sh .claude/hooks/session-start.sh
+          scripts=(.devcontainer/dev-tools/*.sh .claude/hooks/session-start.sh)
+          shellcheck -x "${scripts[@]}"
+          shfmt -i 4 -ci -d "${scripts[@]}"
