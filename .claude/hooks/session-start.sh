@@ -9,6 +9,10 @@ root="$(cd "$(dirname "$0")/../.." && pwd)"
 sudo=""
 [ "$(id -u)" -eq 0 ] || sudo="sudo"
 
+# Warn first about hosts the environment's network policy blocks, so a failed
+# download below is easy to explain. Warnings only.
+bash "$root/.devcontainer/dev-tools/install.sh" --preflight || true
+
 # Same installer and pinned versions (versions.env) as the devcontainer feature.
 # It needs root and is a no-op when the tools are already at the pinned versions.
 $sudo bash "$root/.devcontainer/dev-tools/install.sh"
